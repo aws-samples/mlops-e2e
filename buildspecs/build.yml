@@ -1,0 +1,24 @@
+version: 0.2
+
+env:
+  variables:
+    nodeversion: 14
+    pythonversion: 3.8
+
+phases:
+  install:
+    runtime-versions:
+      python: $pythonversion
+      nodejs: $nodeversion
+    commands:
+      - npm install -g aws-cdk
+
+  build:
+    commands:
+      - bash scripts/test.sh
+      - bash scripts/copy_data_manifest.sh
+      - bash scripts/build_deploy.sh
+
+artifacts:
+  files:
+    - '**/*'

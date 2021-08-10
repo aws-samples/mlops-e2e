@@ -1,0 +1,18 @@
+version: 0.2
+
+env:
+  variables:
+    pythonversion: 3.8
+
+phases:
+  install:
+    runtime-versions:
+      python: $pythonversion
+
+  build:
+    commands:
+      - bash scripts/run_pipeline.sh
+
+artifacts:
+  files:
+    - 'pipelineExecution.json'

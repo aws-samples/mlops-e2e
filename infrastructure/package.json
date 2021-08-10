@@ -1,0 +1,40 @@
+{
+  "name": "infrastracture",
+  "version": "1.0.0",
+  "license": "MIT",
+  "bin": {
+    "infrastracture": "bin/infrastracture.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "cdk": "cdk",
+    "lint": "eslint --fix ."
+  },
+  "devDependencies": {
+    "@types/node": "10.17.27",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "aws-cdk": "1.110.0",
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-prettier": "^3.4.0",
+    "prettier": "^2.3.2",
+    "ts-node": "^9.0.0",
+    "typescript": "~3.9.7"
+  },
+  "dependencies": {
+    "@aws-cdk/aws-codebuild": "1.110.0",
+    "@aws-cdk/aws-codecommit": "1.110.0",
+    "@aws-cdk/aws-codepipeline": "1.110.0",
+    "@aws-cdk/aws-codepipeline-actions": "1.110.0",
+    "@aws-cdk/aws-lambda": "1.110.0",
+    "@aws-cdk/aws-lambda-nodejs": "1.110.0",
+    "@aws-cdk/aws-s3": "1.110.0",
+    "@aws-cdk/aws-s3-notifications": "1.110.0",
+    "@aws-cdk/aws-secretsmanager": "1.110.0",
+    "@aws-cdk/aws-sns": "1.110.0",
+    "@aws-cdk/aws-sns-subscriptions": "1.110.0",
+    "@aws-cdk/core": "1.110.0"
+  }
+}
