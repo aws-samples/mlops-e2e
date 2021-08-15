@@ -30,10 +30,6 @@ Alternatively, the CDK Infrastructure code can provision a CodeCommit Repo as So
 
 To switch to this option, set the value of _repoType_ to _codecommit_ in the `./configuration/projectConfig.json` file.
 
-### IP Permit List
-
-Please note that for simplicity, the API endpoint for the online model consumers is not protected by any authentication process. By default, it can be accessed by anyone from the internet. Please update the value of _ipPermitList_ in the `./configuration/projectConfig.json` to include only the CIDR block of your network.
-
 ## Usage
 
 **Important**: this application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. No warranty is implied in this example.
@@ -58,10 +54,6 @@ If **repoType** is _codecommit_, after the cloudformation stack is created, foll
 
 Download a copy of testing data set from `https://archive.ics.uci.edu/ml/datasets/abalone`, and upload it to the Data Source S3 Bucket (The bucket name starts with _mlopsinfrastracturestack-datasourcedatabucket..._) under your prefered folder path, e.g. _yyyy/mm/dd/abalone.csv_.
 
-#### Model Consumer
-
-After the CodePipeline run is completed (including the Manual-approval -gated Deploy stage), the Model Consumer example can be deployed. See section _ML Model Consumers_ for more details.
-
 ### Cleanup
 
 To clean up all the infrastructure, run the command below:
@@ -80,7 +72,6 @@ In this example, we are solving the abalone age prediction problem using a sampl
 
 - `buildspecs`: Build specification files used by CodeBuild projects
 - `configuration`: Project and Pipeline configuration
-- `consumers`: Examples how to consume the inference model
 - `docs`: Images used in the documentation
 - `infrastructure`: [AWS CDK](https://docs.aws.amazon.com/cdk/latest/guide/home.html) app for provisioning the end-to-end MLOps infrastructure
 - `ml_pipeline`: The SageMaker pipeline definition expressing the ML steps involved in generating an ML model and helper scripts
@@ -94,14 +85,6 @@ In this example, we are solving the abalone age prediction problem using a sampl
 The overall archiecture of the sample project is shown below:
 
 ![Overall Archiecture](./docs/MLOpsOverallArchitecture.png)
-
-## ML Model Consumers
-
-### Online Inference
-
-An example on how to consume the inference model is available in the `consumers/online` folder.
-
-Refer to the [README file](./consumers/online/README.md) for more details and instructions on how to deploy the example.
 
 ## License
 

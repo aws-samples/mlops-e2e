@@ -1,8 +1,0 @@
-{
-  "name": "websiteindex",
-  "version": "1.0.0",
-  "dependencies": {
-    "@types/archiver": "^5.1.1",
-    "archiver": "^5.3.0"
-  }
-}

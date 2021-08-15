@@ -6,8 +6,5 @@
         "githubRepoOwner": "",
         "githubRepoName": ""
     },
-    "modelEndpointExportNamePrefix": "ModelHostingEndpoint",
-    "ipPermitList": [
-        "0.0.0.0/0"
-    ]
+    "modelEndpointExportNamePrefix": "ModelHostingEndpoint"
 }
