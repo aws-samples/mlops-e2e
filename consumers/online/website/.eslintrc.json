@@ -1,0 +1,14 @@
+{
+    "root": true,
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "plugin:prettier/recommended"
+    ],
+    "plugins": [
+      "header"
+    ],
+    "rules": {
+      "header/header": [2, "../../../configuration/header.js"]
+    }
+}

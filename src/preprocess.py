@@ -29,6 +29,9 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 
+import joblib
+import tarfile
+
 feature_columns_names = [
     "sex",
     "length",
@@ -85,14 +88,21 @@ class DataProcessor:
         )
 
         self._logger.debug("Fitting transforms.")
-        self._preprocess.fit(input_data)
+        self._input_data_y = self._input_data.pop("rings")
+        self._preprocess.fit(self._input_data)
 
+    def save_model(self, model_path):
+        model_joblib_path = os.path.join(model_path, "model.joblib")
+        model_tar_path = os.path.join(model_path, "model.tar.gz")
+        joblib.dump(self._preprocess, model_joblib_path)
+        tar = tarfile.open(model_tar_path, "w:gz")
+        tar.add(model_joblib_path, arcname="model.joblib")
+        tar.close()
 
     def process(self):
         self._logger.debug("Applying transforms.")
-        y = self._input_data.pop("rings")
-        x_pre = self._preprocess.fit_transform(self._input_data)
-        y_pre = y.to_numpy().reshape(len(y), 1)
+        x_pre = self._preprocess.transform(self._input_data)
+        y_pre = self._input_data_y.to_numpy().reshape(len(self._input_data_y), 1)
 
         return np.concatenate((y_pre, x_pre), axis=1)
 
@@ -177,6 +187,9 @@ def run_main():
         f"{base_dir}/validation/validation.csv", header=False, index=False
     )
     pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)
+
+    logger.info("Saving the preprocessing model to %s", base_dir)
+    data_processor.save_model(os.path.join(base_dir, "model"))
 
 if __name__ == "__main__":
     run_main()

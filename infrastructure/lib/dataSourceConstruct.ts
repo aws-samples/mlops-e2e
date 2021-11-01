@@ -72,6 +72,7 @@ export class DataSourceConstruct extends cdk.Construct {
             entry: path.join(__dirname, '../functions/dataSourceMonitor/index.ts'),
             timeout: cdk.Duration.minutes(1),
             role: dataSourceMonitorFunctionRole,
+            reservedConcurrentExecutions: 1,
             environment: {
                 DATA_MANIFEST_BUCKET_NAME: this.dataManifestBucket.bucketName,
             },
