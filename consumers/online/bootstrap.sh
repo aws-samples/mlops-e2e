@@ -11,9 +11,6 @@ yarn build
 popd
 
 pushd ./infrastructure
-echo 'Bootstraping CDK in your AWS account'
-cdk bootstrap
-
 echo 'Deploying Infrastructure Stack in your AWS account'
 cdk deploy --require-approval never
 popd

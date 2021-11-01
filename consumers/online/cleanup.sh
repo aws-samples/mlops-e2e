@@ -2,6 +2,10 @@
 
 set -e
 
+echo "Installing dependencies"
+yarn
+
+echo "Destroying CDK Stack"
 pushd ./infrastructure
-cdk destory
+cdk destroy --force
 popd

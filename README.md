@@ -43,7 +43,7 @@ Please note that for simplicity, the API endpoint for the online model consumers
 Run the command below to provision all the required infrastructure.
 
 ```
-bootstrap.sh
+./scripts/bootstrap.sh
 ```
 
 The command can be run repatedly to deploy any changes in this folder. 
@@ -77,12 +77,11 @@ After the CodePipeline run is completed (including the Manual-approval -gated De
 To clean up all the infrastructure, run the command below:
 
 ```
-cleanup.sh
+./scripts/cleanup.sh
 ```
 
 **Note**: If you have bootstraped the model consumer example, you will need to clean up the model consumer infrastructure resources first. Refer to the [README file](./consumers/online/README.md) for more details and instructions on how to clean up the example infrastructure. 
- 
- 
+
 ## Sample Machine Learning Project
 
 The project is created based on the [SageMaker Project Template - MLOps template for model building, training and deployment](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-templates-sm.html#sagemaker-projects-templates-code-commit).
