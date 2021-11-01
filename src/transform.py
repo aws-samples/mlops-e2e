@@ -27,7 +27,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
 
-CONTAINER_2_ACCEPT='text/csv'
+XGBOOST_CONTENT_TYPE='text/csv'
 
 feature_columns_names = [
     "sex",
@@ -68,11 +68,12 @@ def input_fn(input_data, content_type):
         raise ValueError("{} not supported by script!".format(content_type))
 
 def output_fn(prediction, accept):
-    """Format prediction output
+    """Format prediction output.
+       XGBoost only support text/csv and text/libsvm. Use text/csv here. 
     """
-    logger.info(f"output data {prediction} with format {accept}")
+    logger.info(f"output data {prediction}")
 
-    return worker.Response(encoders.encode(prediction, CONTAINER_2_ACCEPT), CONTAINER_2_ACCEPT, mimetype=CONTAINER_2_ACCEPT)
+    return worker.Response(encoders.encode(prediction, XGBOOST_CONTENT_TYPE), XGBOOST_CONTENT_TYPE, mimetype=XGBOOST_CONTENT_TYPE)
 
 def predict_fn(input_data, model):
     """Preprocess input data
