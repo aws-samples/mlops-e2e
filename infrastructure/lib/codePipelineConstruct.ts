@@ -220,14 +220,86 @@ export class CodePipelineConstruct extends cdk.Construct {
 
         deployRole.addToPolicy(
             new iam.PolicyStatement({
+                conditions: {
+                    "ForAnyValue:StringEquals": {
+                        "aws:CalledVia": [
+                            "cloudformation.amazonaws.com"
+                        ]
+                    }
+                },
                 actions: [ 
-                    'iam:*',
-                    'cloudformation:*',
-                    'lambda:*', 
-                    's3:*', 
-                    'sagemaker:*'
+                    'lambda:*Function*'
                 ],
-                resources: ['*'],
+                resources: [
+                    `arn:aws:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:Deployment-${props.projectName}*`
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                conditions: {
+                    "ForAnyValue:StringEquals": {
+                        "aws:CalledVia": [
+                            "cloudformation.amazonaws.com"
+                        ]
+                    }
+                },
+                actions: [ 
+                    'sagemaker:*Endpoint*'
+                ],
+                resources: [
+                    '*'
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                conditions: {
+                    "ForAnyValue:StringEquals": {
+                        "aws:CalledVia": [
+                            "cloudformation.amazonaws.com"
+                        ]
+                    }
+                },
+                actions: [ 
+                    'iam:*Role',
+                    'iam:*Policy*',
+                    'iam:*RolePolicy'
+                ],
+                resources: [
+                    `arn:aws:iam::${cdk.Stack.of(this).account}:role/Deployment-${props.projectName}-*`
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: [ 
+                    "cloudformation:DescribeStacks",
+                    "cloudformation:CreateChangeSet",
+                    "cloudformation:DescribeChangeSet",
+                    "cloudformation:ExecuteChangeSet",
+                    "cloudformation:DescribeStackEvents",
+                    "cloudformation:DeleteChangeSet",
+                    "cloudformation:GetTemplate"
+                ],
+                resources: [
+                    `arn:aws:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/CDKToolkit/*`,
+                    `arn:aws:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/Deployment-${props.projectName}/*`
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: [ 
+                    "s3:*Object",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation"
+                ],
+                resources: ['arn:aws:s3:::cdktoolkit-stagingbucket-*'],
             })
         );
 

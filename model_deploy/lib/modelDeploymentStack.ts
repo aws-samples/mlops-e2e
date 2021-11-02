@@ -63,8 +63,7 @@ export class ModelDeploymentStack extends cdk.Stack {
                 Action: ['sagemaker:CreateModel', 'sagemaker:DeleteModel', 'sagemaker:DescribeModelPackage'],
                 Resource: [
                     `arn:aws:sagemaker:${this.region}:${this.account}:model/${props.projectName}*`,
-                    `arn:aws:sagemaker:${this.region}:${this.account}:model/${props.projectName}*`,
-                    `arn:aws:sagemaker:${this.region}:${this.account}:model-package/${props.projectName}/*`
+                    modelPackageName.valueAsString
                 ],
             })
         );
@@ -97,7 +96,7 @@ export class ModelDeploymentStack extends cdk.Stack {
         const pipelineModelCustomResource = new cdk.CustomResource(this, 'PipelineModelCustomResource', {
             serviceToken: pipelineModelCustomResourceProvider.serviceToken,
             properties: {
-                modelPackageName,
+                modelPackageName: modelPackageName.valueAsString,
                 sagemakerExecutionRole: executionRole.roleArn,
                 projectName: props.projectName
             },
