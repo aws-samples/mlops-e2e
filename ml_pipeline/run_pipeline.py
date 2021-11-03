@@ -24,7 +24,7 @@ from _utils import get_pipeline_driver, convert_struct
 
 def get_model_package_name(pipeline_steps):
     for step in pipeline_steps:
-        if step["StepName"] == "RegisterAbaloneModel":
+        if step["StepName"] == "RegisterModel":
             return step["Metadata"]["RegisterModel"]["Arn"]
 
 def main():  # pragma: no cover

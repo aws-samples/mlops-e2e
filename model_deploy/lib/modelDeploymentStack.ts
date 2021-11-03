@@ -15,8 +15,13 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                              *
  ******************************************************************************************************************** */
 import * as cdk from '@aws-cdk/core';
+import * as path from 'path';
 import * as iam from '@aws-cdk/aws-iam';
 import * as sagemaker from '@aws-cdk/aws-sagemaker';
+import * as lambda from '@aws-cdk/aws-lambda';
+import * as lambdaNodeJs from '@aws-cdk/aws-lambda-nodejs';
+import * as customResource from '@aws-cdk/custom-resources';
+import * as logs from '@aws-cdk/aws-logs';
 
 export interface ModelDeploymentStackProps extends cdk.StackProps {
     modelEndpointExportNamePrefix: string;
@@ -47,12 +52,57 @@ export class ModelDeploymentStack extends cdk.Stack {
             managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSageMakerFullAccess')],
         });
 
-        const model = new sagemaker.CfnModel(this, 'SageMakerModel', {
-            primaryContainer: {
-                modelPackageName: modelPackageName.valueAsString,
-            },
-            executionRoleArn: executionRole.roleArn,
+        const pipelineModelFunctionRole = new iam.Role(this, 'DataFunctionRole', {
+            assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+            managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
         });
+
+        pipelineModelFunctionRole.addToPolicy(
+            iam.PolicyStatement.fromJson({
+                Effect: 'Allow',
+                Action: ['sagemaker:CreateModel', 'sagemaker:DeleteModel', 'sagemaker:DescribeModelPackage'],
+                Resource: [
+                    `arn:aws:sagemaker:${this.region}:${this.account}:model/${props.projectName}*`,
+                    modelPackageName.valueAsString
+                ],
+            })
+        );
+
+        pipelineModelFunctionRole.addToPolicy(
+            iam.PolicyStatement.fromJson({
+                Effect: 'Allow',
+                Action: ['iam:PassRole'],
+                Resource: [executionRole.roleArn],
+            }));
+
+        const pipelineModelFunction = new lambdaNodeJs.NodejsFunction(this, 'PipelineModelFunction', {
+            runtime: lambda.Runtime.NODEJS_14_X,
+            handler: 'handler',
+            entry: path.join(__dirname, '../customResources/pipelineModel/index.ts'),
+            timeout: cdk.Duration.minutes(1),
+            reservedConcurrentExecutions: 1,
+            role: pipelineModelFunctionRole
+        });
+
+        const pipelineModelCustomResourceProvider = new customResource.Provider(
+            this,
+            'PipelineModelCustomResourceProvider',
+            {
+                onEventHandler: pipelineModelFunction,
+                logRetention: logs.RetentionDays.ONE_DAY,
+            }
+        );
+
+        const pipelineModelCustomResource = new cdk.CustomResource(this, 'PipelineModelCustomResource', {
+            serviceToken: pipelineModelCustomResourceProvider.serviceToken,
+            properties: {
+                modelPackageName: modelPackageName.valueAsString,
+                sagemakerExecutionRole: executionRole.roleArn,
+                projectName: props.projectName
+            },
+        });
+
+        pipelineModelCustomResource.node.addDependency(executionRole);
 
         const endpointConfig = new sagemaker.CfnEndpointConfig(this, 'SageMakerModelEndpointConfig', {
             productionVariants: [
@@ -60,19 +110,19 @@ export class ModelDeploymentStack extends cdk.Stack {
                     initialInstanceCount: endpointInstanceCount.valueAsNumber,
                     initialVariantWeight: 1.0,
                     instanceType: endpointInstanceType.valueAsString,
-                    modelName: model.getAtt('ModelName').toString(),
+                    modelName: pipelineModelCustomResource.ref,
                     variantName: 'AllTraffic',
                 },
             ],
         });
 
-        endpointConfig.addDependsOn(model);
+        endpointConfig.node.addDependency(pipelineModelCustomResource)
 
         const endpoint = new sagemaker.CfnEndpoint(this, 'SageMakerModelEndpoint', {
             endpointConfigName: endpointConfig.getAtt('EndpointConfigName').toString(),
         });
 
-        endpoint.addDependsOn(endpointConfig);
+        endpoint.node.addDependency(endpointConfig);
 
         new cdk.CfnOutput(this, 'ModelEndpointOutput', {
             value: endpoint.ref,

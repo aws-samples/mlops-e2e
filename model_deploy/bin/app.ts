@@ -23,6 +23,6 @@ import projectConfig = require('../../configuration/projectConfig.json');
 
 const app = new cdk.App();
 //@ts-ignore
-new ModelDeploymentStack(app, 'ModelDeploymentStack', {
+new ModelDeploymentStack(app, `Deployment-${projectConfig.projectName}`, {
     ...projectConfig,
 });

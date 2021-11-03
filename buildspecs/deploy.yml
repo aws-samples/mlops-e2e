@@ -1,0 +1,18 @@
+version: 0.2
+
+env:
+  variables:
+    nodeversion: 14
+    pythonversion: 3.8
+
+phases:
+  install:
+    runtime-versions:
+      python: $pythonversion
+      nodejs: $nodeversion
+    commands:
+      - npm install -g aws-cdk@1.130.0
+
+  build:
+    commands:
+      - bash scripts/deploy.sh

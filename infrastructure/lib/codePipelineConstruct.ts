@@ -25,7 +25,7 @@ import * as codepipeline_actions from '@aws-cdk/aws-codepipeline-actions';
 
 export type CodePipelineConstructProps = {
     readonly dataManifestBucket: s3.Bucket;
-    readonly sageMakerArtifectBucket: s3.Bucket;
+    readonly sageMakerArtifactBucket: s3.Bucket;
     readonly sageMakerExecutionRole: iam.Role;
     readonly projectName: string;
 } & (CodePipelineConstructPropsGithubSource | CodePipelineConstructPropsCodeCommitSource);
@@ -48,10 +48,11 @@ export interface CodePipelineConstructPropsGithubSource {
  * The CDK Construct provisions the code pipeline construct.
  */
 export class CodePipelineConstruct extends cdk.Construct {
+    readonly pipeline: codepipeline.Pipeline;
     constructor(scope: cdk.Construct, id: string, props: CodePipelineConstructProps) {
         super(scope, id);
 
-        const pipeline = new codepipeline.Pipeline(this, 'MLOpsPipeline', {
+        this.pipeline = new codepipeline.Pipeline(this, 'MLOpsPipeline', {
             restartExecutionOnUpdate: true,
         });
 
@@ -92,7 +93,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             bucketKey: 'manifest.json.zip',
         });
 
-        pipeline.addStage({
+        this.pipeline.addStage({
             stageName: 'Source',
             actions: [sourceCode, sourceData],
         });
@@ -102,6 +103,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/build.yml'),
             environment: {
                 buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
+                privileged: true
             },
         });
 
@@ -113,7 +115,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             outputs: [buildOutput],
         });
 
-        pipeline.addStage({
+        this.pipeline.addStage({
             stageName: 'CI',
             actions: [build],
         });
@@ -127,7 +129,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             iam.PolicyStatement.fromJson({
                 Effect: 'Allow',
                 Action: ['s3:CreateBucket', 's3:GetObject', 's3:PutObject', 's3:ListBucket'],
-                Resource: [props.sageMakerArtifectBucket.bucketArn, `${props.sageMakerArtifectBucket.bucketArn}/*`],
+                Resource: [props.sageMakerArtifactBucket.bucketArn, `${props.sageMakerArtifactBucket.bucketArn}/*`],
             })
         );
 
@@ -179,7 +181,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             environmentVariables: {
                 SAGEMAKER_ARTIFACT_BUCKET: {
                     type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
-                    value: props.sageMakerArtifectBucket.bucketName,
+                    value: props.sageMakerArtifactBucket.bucketName,
                 },
                 SAGEMAKER_PIPELINE_ROLE_ARN: {
                     type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
@@ -192,15 +194,12 @@ export class CodePipelineConstruct extends cdk.Construct {
             },
         });
 
-        pipeline.addStage({
+        this.pipeline.addStage({
             stageName: 'MLPipeline',
             actions: [mlPipelie],
         });
 
         //Deploy
-        const stackName = `Deployment-${props.projectName}`;
-        const changeSetName = `Deployment-ChangeSet-${props.projectName}`;
-
         const deploymentApprovalTopic = new sns.Topic(this, 'ModelDeploymentApprovalTopic', {
             topicName: 'ModelDeploymentApprovalTopic',
         });
@@ -215,29 +214,115 @@ export class CodePipelineConstruct extends cdk.Construct {
             }#/studio/`,
         });
 
-        const prepare = new codepipeline_actions.CloudFormationCreateReplaceChangeSetAction({
-            actionName: 'Prepare',
-            runOrder: 2,
-            stackName,
-            changeSetName,
-            adminPermissions: true,
-            templatePath: buildOutput.atPath('model_deploy/cdk.out/ModelDeploymentStack.template.json'),
-            extraInputs: [pipelineOutput],
-            parameterOverrides: {
-                modelPackageName: { 'Fn::GetParam': [pipelineOutput.artifactName, 'pipelineExecution.json', 'arn'] },
+        const deployRole = new iam.Role(this, 'DeployRole', {
+            assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
+        });
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                conditions: {
+                    "ForAnyValue:StringEquals": {
+                        "aws:CalledVia": [
+                            "cloudformation.amazonaws.com"
+                        ]
+                    }
+                },
+                actions: [ 
+                    'lambda:*Function*'
+                ],
+                resources: [
+                    `arn:aws:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:Deployment-${props.projectName}*`
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                conditions: {
+                    "ForAnyValue:StringEquals": {
+                        "aws:CalledVia": [
+                            "cloudformation.amazonaws.com"
+                        ]
+                    }
+                },
+                actions: [ 
+                    'sagemaker:*Endpoint*'
+                ],
+                resources: [
+                    '*'
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                conditions: {
+                    "ForAnyValue:StringEquals": {
+                        "aws:CalledVia": [
+                            "cloudformation.amazonaws.com"
+                        ]
+                    }
+                },
+                actions: [ 
+                    'iam:*Role',
+                    'iam:*Policy*',
+                    'iam:*RolePolicy'
+                ],
+                resources: [
+                    `arn:aws:iam::${cdk.Stack.of(this).account}:role/Deployment-${props.projectName}-*`
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: [ 
+                    "cloudformation:DescribeStacks",
+                    "cloudformation:CreateChangeSet",
+                    "cloudformation:DescribeChangeSet",
+                    "cloudformation:ExecuteChangeSet",
+                    "cloudformation:DescribeStackEvents",
+                    "cloudformation:DeleteChangeSet",
+                    "cloudformation:GetTemplate"
+                ],
+                resources: [
+                    `arn:aws:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/CDKToolkit/*`,
+                    `arn:aws:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/Deployment-${props.projectName}/*`
+                ],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: [ 
+                    "s3:*Object",
+                    "s3:ListBucket",
+                    "s3:GetBucketLocation"
+                ],
+                resources: ['arn:aws:s3:::cdktoolkit-stagingbucket-*'],
+            })
+        );
+
+        const deployProject = new codebuild.PipelineProject(this, 'DeployProject', {
+            buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/deploy.yml'),
+            role: deployRole,
+            environment: {
+                buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
+                privileged: true
             },
         });
 
-        const execution = new codepipeline_actions.CloudFormationExecuteChangeSetAction({
-            actionName: 'Execute',
-            runOrder: 3,
-            stackName,
-            changeSetName,
+        const deploy = new codepipeline_actions.CodeBuildAction({
+            actionName: 'Deploy',
+            runOrder: 2,
+            project: deployProject,
+            input: buildOutput,
+            extraInputs: [pipelineOutput],
         });
 
-        pipeline.addStage({
+        this.pipeline.addStage({
             stageName: 'Deploy',
-            actions: [manualApprovalAction, prepare, execution],
+            actions: [manualApprovalAction, deploy],
         });
     }
 }

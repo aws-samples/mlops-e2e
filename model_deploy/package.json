@@ -14,7 +14,8 @@
     "@types/node": "10.17.27",
     "@typescript-eslint/eslint-plugin": "^4.29.0",
     "@typescript-eslint/parser": "^4.29.0",
-    "aws-cdk": "1.110.0",
+    "aws-cdk": "1.130.0",
+    "esbuild": "^0.12.25",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-header": "^3.1.1",
@@ -24,8 +25,12 @@
     "typescript": "~3.9.7"
   },
   "dependencies": {
-    "@aws-cdk/aws-iam": "1.110.0",
-    "@aws-cdk/aws-sagemaker": "1.110.0",
-    "@aws-cdk/core": "1.110.0"
+    "@aws-cdk/aws-iam": "1.130.0",
+    "@aws-cdk/aws-lambda": "1.130.0",
+    "@aws-cdk/aws-lambda-nodejs": "1.130.0",
+    "@aws-cdk/aws-logs": "1.130.0",
+    "@aws-cdk/aws-sagemaker": "1.130.0",
+    "@aws-cdk/core": "1.130.0",
+    "@aws-cdk/custom-resources": "1.130.0"
   }
 }

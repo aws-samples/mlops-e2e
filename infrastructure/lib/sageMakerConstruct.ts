@@ -27,15 +27,13 @@ export interface SageMakerConstructProps {
  */
 export class SageMakerConstruct extends cdk.Construct {
     readonly sagemakerExecutionRole: iam.Role;
-    readonly sagemakerArtifectBucket: s3.Bucket;
+    readonly sagemakerArtifactBucket: s3.Bucket;
     constructor(scope: cdk.Construct, id: string, props: SageMakerConstructProps) {
         super(scope, id);
 
-        this.sagemakerArtifectBucket = new s3.Bucket(this, 'SageMakerArtifectBucket', {
+        this.sagemakerArtifactBucket = new s3.Bucket(this, 'SageMakerArtifactBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            encryption: s3.BucketEncryption.S3_MANAGED,
-            serverAccessLogsPrefix: 'logs',
-            accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+            encryption: s3.BucketEncryption.S3_MANAGED
         });
 
         this.sagemakerExecutionRole = new iam.Role(this, 'SageMakerExecutionRole', {
@@ -55,7 +53,7 @@ export class SageMakerConstruct extends cdk.Construct {
             iam.PolicyStatement.fromJson({
                 Effect: 'Allow',
                 Action: ['s3:GetObject', 's3:PutObject', 's3:ListBucket'],
-                Resource: [this.sagemakerArtifectBucket.bucketArn, `${this.sagemakerArtifectBucket.bucketArn}/*`],
+                Resource: [this.sagemakerArtifactBucket.bucketArn, `${this.sagemakerArtifactBucket.bucketArn}/*`],
             })
         );
     }

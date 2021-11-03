@@ -31,11 +31,34 @@ export class InfrastractureStack extends cdk.Stack {
             dataBucket: dataSource.dataBucket,
         });
 
-        new CodePipelineConstruct(this, 'CodePipeline', {
+        const codePipeline = new CodePipelineConstruct(this, 'CodePipeline', {
             ...props,
             dataManifestBucket: dataSource.dataManifestBucket,
-            sageMakerArtifectBucket: sageMaker.sagemakerArtifectBucket,
+            sageMakerArtifactBucket: sageMaker.sagemakerArtifactBucket,
             sageMakerExecutionRole: sageMaker.sagemakerExecutionRole,
+        });
+
+        new cdk.CfnOutput(this, 'CodePipelineOutput', {
+            value: codePipeline.pipeline.pipelineName
+        });
+
+        new cdk.CfnOutput(this, 'DataBucketOutput', {
+            value: dataSource.dataBucket.bucketName,
+            exportName: 'MLOpsE2EDemo-DataBucket',
+        });
+
+        new cdk.CfnOutput(this, 'DataManifestBucketOutput', {
+            value: dataSource.dataManifestBucket.bucketName
+        });
+
+        new cdk.CfnOutput(this, 'SageMakerArtifactBucketOutput', {
+            value: sageMaker.sagemakerArtifactBucket.bucketName,
+            exportName: 'MLOpsE2EDemo-SageMakerArtifactBucket',
+        });
+
+        new cdk.CfnOutput(this, 'SageMakerExecutionRoleOutput', {
+            value: sageMaker.sagemakerExecutionRole.roleArn,
+            exportName: 'MLOpsE2EDemo-SageMakerExecutionRole',
         });
     }
 }
