@@ -53,26 +53,15 @@ export class WebsiteConstruct extends cdk.Construct {
             cloudFrontOia.ref
         );
 
-        const accessLoggingBucket = new s3.Bucket(this, 'WebsiteBucketAccessLogging', {
-            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            encryption: s3.BucketEncryption.S3_MANAGED,
-            serverAccessLogsPrefix: 'logs',
-            accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
-        });
-
         const sourceBucket = new s3.Bucket(this, 'WebsiteBucket', {
             websiteIndexDocument: 'index.html',
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            serverAccessLogsPrefix: 'logs',
-            serverAccessLogsBucket: accessLoggingBucket,
             encryption: s3.BucketEncryption.S3_MANAGED,
         });
 
         const cloudFrontLoggingBucket = new s3.Bucket(this, 'S3BucketForWebsiteLogging', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            encryption: s3.BucketEncryption.S3_MANAGED,
-            serverAccessLogsPrefix: 'logs',
-            accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+            encryption: s3.BucketEncryption.S3_MANAGED
         });
 
         const cloudFrontDistribution = new cloudfront.CloudFrontWebDistribution(this, 'WebsiteCloudFront', {
@@ -104,9 +93,7 @@ export class WebsiteConstruct extends cdk.Construct {
         /**S3 bucket storing the dynamically generated index files.*/
         const websiteIndexBucket = new s3.Bucket(this, 'WebsiteIndexBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            encryption: s3.BucketEncryption.S3_MANAGED,
-            serverAccessLogsPrefix: 'logs',
-            accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
+            encryption: s3.BucketEncryption.S3_MANAGED
         });
 
         const buildWebsiteIndexFunction = new lambdaNodeJs.NodejsFunction(this, 'BuildWebsiteIndexFunction', {
