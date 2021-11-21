@@ -39,17 +39,8 @@ export class DataSourceConstruct extends cdk.Construct {
             managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')],
         });
 
-        const accessLoggingBucket = new s3.Bucket(this, 'DataBucketAccessLogging', {
-            blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            encryption: s3.BucketEncryption.S3_MANAGED,
-            serverAccessLogsPrefix: 'logs',
-            accessControl: s3.BucketAccessControl.LOG_DELIVERY_WRITE,
-        });
-
         this.dataBucket = new s3.Bucket(this, 'DataBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-            serverAccessLogsPrefix: 'logs',
-            serverAccessLogsBucket: accessLoggingBucket,
             encryption: s3.BucketEncryption.S3_MANAGED,
         });
 
