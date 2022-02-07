@@ -1,36 +1,34 @@
 {
   "name": "website",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "MIT-0",
   "private": true,
   "devDependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/jest": "^26.0.15",
-    "react-scripts": "4.0.3",
-    "web-vitals": "^1.0.1"
-  },
-  "dependencies": {
-    "@types/node": "^12.0.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "aws-northstar": "^1.3.10",
-    "data-type": "1.0.0",
+    "@testing-library/jest-dom": "^5.16.2",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.4.0",
+    "@types/node": "^16.11.22",
+    "@types/react": "^17.0.38",
+    "@types/react-dom": "^17.0.11",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-header": "^3.1.1",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "react-scripts": "5.0.0",
+    "typescript": "^4.5.5",
+    "web-vitals": "^2.1.4"
+  },
+  "dependencies": {
+    "aws-northstar": "^1.3.12",
+    "data-type": "1.0.0",
     "prettier": "^2.3.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "^5.2.0",
-    "typescript": "^4.1.2"
+    "react-router-dom": "^6.2.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
     "lint": "eslint --fix ."
   },
   "browserslist": {

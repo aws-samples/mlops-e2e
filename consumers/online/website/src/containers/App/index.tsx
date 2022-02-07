@@ -21,7 +21,7 @@ import Header from 'aws-northstar/components/Header';
 import AbaloneInsight from '../AbaloneInsight';
 
 const App: FunctionComponent = () => {
-    const header = <Header title="Abalone Insight" logoPath="/logo192.png" />;
+    const header = <Header title="Abalone Insight" />;
 
     return (
         <NorthStarThemeProvider>

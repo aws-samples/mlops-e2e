@@ -42,13 +42,18 @@ export class DataSourceConstruct extends cdk.Construct {
         this.dataBucket = new s3.Bucket(this, 'DataBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
             encryption: s3.BucketEncryption.S3_MANAGED,
+            enforceSSL: true,
+            versioned: true,
+            publicReadAccess: false,
         });
 
         this.dataBucket.grantRead(dataSourceMonitorFunctionRole);
 
         this.dataManifestBucket = new s3.Bucket(this, 'DataManifestBucket', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+            enforceSSL: true,
             versioned: true,
+            publicReadAccess: false,
         });
 
         this.dataManifestBucket.grantWrite(dataSourceMonitorFunctionRole);
