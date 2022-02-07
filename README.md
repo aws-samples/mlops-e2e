@@ -36,9 +36,7 @@ Please note that for simplicity, the API endpoint for the online model consumers
 
 ## Usage
 
-**Important**: this application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. No warranty is implied in this example.
-
-**Important**: this application uses [SageMaker Serverless Inference](https://docs.aws.amazon.com/sagemaker/latest/dg/serverless-endpoints.html) for showcasing how we can run inference. Serverless Inference is in PREVIEW release for Amazon SageMaker and is subject to change. We do not recommend using this feature in production environments.  Serverless Inference is currenlty available in Preview in the following Regions: US East (N. Virginia) us-east-1, US East (Ohio) us-east-2, US West (Oregon) us-west-2, Europe (Ireland) eu-west-1, Asia Pacific (Tokyo) ap-northeast-1 and Asia Pacific (Sydney) ap-southeast-2. 
+**Important**: this application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. Please follow the **Cleanup** Section to clean up resources after your usage. No warranty is implied in this example.
 
 ### Bootstrap
 Run the command below to provision all the required infrastructure.
@@ -156,7 +154,7 @@ In the preprocessing job (specified in the `./src/preprocess.py` file), we lever
 
 ### Model Deploy
 
-The Model Deployment is managed by the CDK stack defined in the `./model_deploy` folder. 
+The Model Deployment is managed by the CDK stack defined in the `./model_deploy` folder. The model is deployed into **persistent** [SageMaker Real-time Inference endpoint](https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html). 
 
 ## ML Model Consumers
 ### Online Inference

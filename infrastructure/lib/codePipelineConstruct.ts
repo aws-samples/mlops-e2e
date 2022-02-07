@@ -275,6 +275,20 @@ export class CodePipelineConstruct extends Construct {
             })
         );
 
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: ['ssm:GetParameter'],
+                resources: [`arn:aws:ssm:${Stack.of(this).region}:${Stack.of(this).account}:parameter/cdk-bootstrap/*`],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: ['sts:AssumeRole', 'iam:PassRole'],
+                resources: [`arn:aws:iam::${Stack.of(this).account}:role/cdk*`],
+            })
+        );
+
         const deployProject = new codebuild.PipelineProject(this, 'DeployProject', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/deploy.yml'),
             role: deployRole,
