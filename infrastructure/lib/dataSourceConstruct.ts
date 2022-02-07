@@ -55,7 +55,6 @@ export class DataSourceConstruct extends Construct {
             entry: path.join(__dirname, '../functions/dataSourceMonitor/src/index.ts'),
             timeout: Duration.minutes(1),
             role: dataSourceMonitorFunctionRole,
-            reservedConcurrentExecutions: 1,
             environment: {
                 DATA_MANIFEST_BUCKET_NAME: this.dataManifestBucket.bucketName,
             },

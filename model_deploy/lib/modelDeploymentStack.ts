@@ -23,17 +23,6 @@ export class ModelDeploymentStack extends Stack {
             type: 'String',
         });
 
-        const endpointInstanceType = new CfnParameter(this, 'endpointInstanceType', {
-            type: 'String',
-            default: 'ml.m5.large',
-        });
-
-        const endpointInstanceCount = new CfnParameter(this, 'endpointInstanceCount', {
-            type: 'Number',
-            default: 1,
-            minValue: 1,
-        });
-
         const executionRole = new iam.Role(this, 'SageMakerModelExecutionRole', {
             assumedBy: new iam.ServicePrincipal('sagemaker.amazonaws.com'),
             managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSageMakerFullAccess')],
@@ -68,7 +57,6 @@ export class ModelDeploymentStack extends Stack {
             handler: 'handler',
             entry: path.join(__dirname, '../customResources/pipelineModel/index.ts'),
             timeout: Duration.minutes(1),
-            reservedConcurrentExecutions: 1,
             role: pipelineModelFunctionRole,
         });
 
@@ -95,11 +83,13 @@ export class ModelDeploymentStack extends Stack {
         const endpointConfig = new sagemaker.CfnEndpointConfig(this, 'SageMakerModelEndpointConfig', {
             productionVariants: [
                 {
-                    initialInstanceCount: endpointInstanceCount.valueAsNumber,
                     initialVariantWeight: 1.0,
-                    instanceType: endpointInstanceType.valueAsString,
                     modelName: pipelineModelCustomResource.ref,
                     variantName: 'AllTraffic',
+                    serverlessConfig: {
+                        memorySizeInMb: 1024,
+                        maxConcurrency: 10,
+                    },
                 },
             ],
         });

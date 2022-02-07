@@ -30,6 +30,8 @@ If the script is run successfully, a list of Cloudformation Output will be print
 
 You can visit the cloudfront url to try out the model inference using the testing data set. 
 
+**Important**: this application uses SageMaker Serverless Inference Endpoint. You may experience **Cold starts** in the first few requests. Please refer to the *Cold starts* section in the [SageMaker Serverless Inference](https://docs.aws.amazon.com/sagemaker/latest/dg/serverless-endpoints.html) documentation for details. 
+
 ![Online Consumer Inference Form](../../docs/OnlineConsumerInferenceForm.png)
 
 ![Online Consumer Inference Result](../../docs/OnlineConsumerInferenceResult.png)

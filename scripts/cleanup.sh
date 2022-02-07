@@ -9,7 +9,7 @@ echo 'Installing dependencies'
 yarn
 
 echo 'Cleaning up Infrastructure Stack resources in your AWS account'
-cdk destroy --force
+yarn cdk destroy --force
 popd
 
 echo "Cleaning up Model Deploy Stack"
@@ -19,7 +19,7 @@ echo 'Installing dependencies'
 yarn
 
 echo 'Cleaning up Model Deploy Stack resources in your AWS account'
-cdk destroy --force
+yarn cdk destroy --force
 popd
 
 echo "Deleting SageMaker Pipeline using cli"

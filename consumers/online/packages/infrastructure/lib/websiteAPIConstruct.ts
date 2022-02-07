@@ -98,7 +98,6 @@ export class WebsiteApiConstruct extends Construct {
             entry: path.join(__dirname, '../../data-api/src/index.ts'),
             timeout: Duration.seconds(30),
             role: dataFunctionRole,
-            reservedConcurrentExecutions: 1,
             environment: {
                 SAGEMAKER_ENDPOINT_NAME: props.sageMakerEndpointName,
                 DATA_TABLE_NAME: dataTable.tableName,
