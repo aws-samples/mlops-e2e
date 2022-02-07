@@ -86,7 +86,7 @@ export class WebsiteConstruct extends Construct {
         const buildWebsiteIndexFunction = new lambdaNodeJs.NodejsFunction(this, 'BuildWebsiteIndexFunction', {
             runtime: lambda.Runtime.NODEJS_14_X,
             handler: 'handler',
-            entry: path.join(__dirname, '../../website-index-builder/index.ts'),
+            entry: path.join(__dirname, '../../website-index-builder/src/index.ts'),
             timeout: Duration.minutes(1),
             reservedConcurrentExecutions: 1,
         });

@@ -95,7 +95,7 @@ export class WebsiteApiConstruct extends Construct {
         const dataFunction = new lambdaNodeJs.NodejsFunction(this, 'DataFunction', {
             runtime: lambda.Runtime.NODEJS_14_X,
             handler: 'handler',
-            entry: path.join(__dirname, '../app/data/src/index.ts'),
+            entry: path.join(__dirname, '../../data-api/src/index.ts'),
             timeout: Duration.seconds(30),
             role: dataFunctionRole,
             reservedConcurrentExecutions: 1,
