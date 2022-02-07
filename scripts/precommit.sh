@@ -2,19 +2,14 @@
 
 set -e
 
-pushd ./infrastructure 
-yarn lint
+pushd ./infrastructure
+yarn lint:fix
 popd
 
 pushd ./model_deploy
-yarn lint
+yarn lint:fix
 popd
 
 pushd ./consumers/online
-pushd ./infrastructure
-yarn lint
-popd
-
-pushd ./website
-yarn lint
+yarn lint:fix
 popd

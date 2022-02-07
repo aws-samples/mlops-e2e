@@ -1,0 +1,16 @@
+**/build/ 
+**/dist/
+node_modules/
+**/node_modules/
+*.md
+*.png
+*.html
+**/yarn.lock
+**/package.json
+**/yarn.lock
+**/.eslintignore
+**/.eslintrc.js
+**/tsconfig.json
+**/manifest.json
+**/robots.txt
+**/cdk.json

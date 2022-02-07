@@ -15,23 +15,24 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                              *
  ******************************************************************************************************************** */
 import * as path from 'path';
-import * as cdk from '@aws-cdk/core';
-import * as s3 from '@aws-cdk/aws-s3';
-import * as iam from '@aws-cdk/aws-iam';
-import * as sns from '@aws-cdk/aws-sns';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as lambdaNodeJs from '@aws-cdk/aws-lambda-nodejs';
-import * as s3Notification from '@aws-cdk/aws-s3-notifications';
-import * as snsSubscription from '@aws-cdk/aws-sns-subscriptions';
+import { Construct } from 'constructs';
+import * as cdk from 'aws-cdk-lib/core';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as s3Notification from 'aws-cdk-lib/aws-s3-notifications';
+import * as snsSubscription from 'aws-cdk-lib/aws-sns-subscriptions';
 
 /**
  * The CDK Construct provisions the data source buckets and related resources.
  */
-export class DataSourceConstruct extends cdk.Construct {
+export class DataSourceConstruct extends Construct {
     readonly dataBucket: s3.Bucket;
     readonly dataManifestBucket: s3.Bucket;
 
-    constructor(scope: cdk.Construct, id: string) {
+    constructor(scope: Construct, id: string) {
         super(scope, id);
 
         const dataSourceMonitorFunctionRole = new iam.Role(this, 'DataFunctionRole', {

@@ -1,0 +1,13 @@
+{
+  "name": "@aws-cdk-mlops-e2e/model-consumer-online-data-type",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT-0",
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint --max-warnings 0  .",
+    "lint:fix": "eslint --fix ."
+  }
+}

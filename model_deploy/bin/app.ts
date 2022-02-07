@@ -16,13 +16,13 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                              *
  ******************************************************************************************************************** */
 
-import * as cdk from '@aws-cdk/core';
+import { App } from 'aws-cdk-lib';
 import { ModelDeploymentStack } from '../lib/modelDeploymentStack';
 
 import projectConfig = require('../../configuration/projectConfig.json');
 
-const app = new cdk.App();
-//@ts-ignore
+const app = new App();
+
 new ModelDeploymentStack(app, `Deployment-${projectConfig.projectName}`, {
     ...projectConfig,
 });

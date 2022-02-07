@@ -23,43 +23,45 @@ const sagemaker = new AWS.SageMaker();
 const createModel = async (projectName: string, modelPackageName: string, executionRoleArn: string) => {
     const date = new Date();
     const modelName = `${projectName}-${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}-${date.getUTCHours()}-${date.getUTCMinutes()}-${date.getUTCSeconds()}-${date.getUTCMilliseconds()}`;
-    console.log(`Creating model ${modelName} for modelPackageName: ${modelPackageName} with role ${executionRoleArn}`)
-    const modelPackage = await sagemaker.describeModelPackage({
-        ModelPackageName: modelPackageName
-    }).promise();
+    console.log(`Creating model ${modelName} for modelPackageName: ${modelPackageName} with role ${executionRoleArn}`);
+    const modelPackage = await sagemaker
+        .describeModelPackage({
+            ModelPackageName: modelPackageName,
+        })
+        .promise();
 
-    await sagemaker.createModel({
-        ModelName: modelName,
-        Containers: modelPackage.InferenceSpecification?.Containers?.map(
-            c => ({
+    await sagemaker
+        .createModel({
+            ModelName: modelName,
+            Containers: modelPackage.InferenceSpecification?.Containers?.map((c) => ({
                 Image: c.Image,
                 ModelDataUrl: c.ModelDataUrl,
-                Environment: c.Environment
-            })
-        ),
-        ExecutionRoleArn: executionRoleArn
-    }).promise();
+                Environment: c.Environment,
+            })),
+            ExecutionRoleArn: executionRoleArn,
+        })
+        .promise();
 
     return {
-        'PhysicalResourceId': modelName
-    }
-}
+        PhysicalResourceId: modelName,
+    };
+};
 
 const deleteModel = async (modelName: string) => {
     console.log('Deleting model: ', modelName);
     await sagemaker.deleteModel({
-        ModelName: modelName
+        ModelName: modelName,
     });
     console.log('Deleted model: ', modelName);
     return {};
-}
+};
 
 const dispatch = async (event: any, requestType: string) => {
     const props = event['ResourceProperties'];
     const resourceId = event['PhysicalResourceId'];
     switch (requestType) {
         case 'Create':
-        case 'Update': 
+        case 'Update':
             return createModel(props.projectName, props.modelPackageName, props.sagemakerExecutionRole);
         case 'Delete': {
             return deleteModel(resourceId);

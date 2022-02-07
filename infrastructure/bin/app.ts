@@ -15,12 +15,12 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                              *
  ******************************************************************************************************************** */
-import * as cdk from '@aws-cdk/core';
+import { App } from 'aws-cdk-lib';
 import { InfrastractureStack } from '../lib/infrastractureStack';
 
 import projectConfig = require('../../configuration/projectConfig.json');
 
-const app = new cdk.App();
+const app = new App();
 // @ts-ignore
 new InfrastractureStack(app, `MLOpsInfrastractureStack-${projectConfig.projectName}`, {
     ...projectConfig,

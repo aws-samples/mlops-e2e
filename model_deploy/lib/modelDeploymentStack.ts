@@ -14,34 +14,35 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                              *
  ******************************************************************************************************************** */
-import * as cdk from '@aws-cdk/core';
+import { Construct } from 'constructs';
+import { Stack, StackProps, CfnParameter, CustomResource, CfnOutput, Duration } from 'aws-cdk-lib';
 import * as path from 'path';
-import * as iam from '@aws-cdk/aws-iam';
-import * as sagemaker from '@aws-cdk/aws-sagemaker';
-import * as lambda from '@aws-cdk/aws-lambda';
-import * as lambdaNodeJs from '@aws-cdk/aws-lambda-nodejs';
-import * as customResource from '@aws-cdk/custom-resources';
-import * as logs from '@aws-cdk/aws-logs';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sagemaker from 'aws-cdk-lib/aws-sagemaker';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as lambdaNodeJs from 'aws-cdk-lib/aws-lambda-nodejs';
+import * as customResource from 'aws-cdk-lib/custom-resources';
+import * as logs from 'aws-cdk-lib/aws-logs';
 
-export interface ModelDeploymentStackProps extends cdk.StackProps {
+export interface ModelDeploymentStackProps extends StackProps {
     modelEndpointExportNamePrefix: string;
     projectName: string;
 }
 
-export class ModelDeploymentStack extends cdk.Stack {
-    constructor(scope: cdk.App, id: string, props: ModelDeploymentStackProps) {
+export class ModelDeploymentStack extends Stack {
+    constructor(scope: Construct, id: string, props: ModelDeploymentStackProps) {
         super(scope, id, props);
 
-        const modelPackageName = new cdk.CfnParameter(this, 'modelPackageName', {
+        const modelPackageName = new CfnParameter(this, 'modelPackageName', {
             type: 'String',
         });
 
-        const endpointInstanceType = new cdk.CfnParameter(this, 'endpointInstanceType', {
+        const endpointInstanceType = new CfnParameter(this, 'endpointInstanceType', {
             type: 'String',
             default: 'ml.m5.large',
         });
 
-        const endpointInstanceCount = new cdk.CfnParameter(this, 'endpointInstanceCount', {
+        const endpointInstanceCount = new CfnParameter(this, 'endpointInstanceCount', {
             type: 'Number',
             default: 1,
             minValue: 1,
@@ -63,7 +64,7 @@ export class ModelDeploymentStack extends cdk.Stack {
                 Action: ['sagemaker:CreateModel', 'sagemaker:DeleteModel', 'sagemaker:DescribeModelPackage'],
                 Resource: [
                     `arn:aws:sagemaker:${this.region}:${this.account}:model/${props.projectName}*`,
-                    modelPackageName.valueAsString
+                    modelPackageName.valueAsString,
                 ],
             })
         );
@@ -73,15 +74,16 @@ export class ModelDeploymentStack extends cdk.Stack {
                 Effect: 'Allow',
                 Action: ['iam:PassRole'],
                 Resource: [executionRole.roleArn],
-            }));
+            })
+        );
 
         const pipelineModelFunction = new lambdaNodeJs.NodejsFunction(this, 'PipelineModelFunction', {
             runtime: lambda.Runtime.NODEJS_14_X,
             handler: 'handler',
             entry: path.join(__dirname, '../customResources/pipelineModel/index.ts'),
-            timeout: cdk.Duration.minutes(1),
+            timeout: Duration.minutes(1),
             reservedConcurrentExecutions: 1,
-            role: pipelineModelFunctionRole
+            role: pipelineModelFunctionRole,
         });
 
         const pipelineModelCustomResourceProvider = new customResource.Provider(
@@ -93,12 +95,12 @@ export class ModelDeploymentStack extends cdk.Stack {
             }
         );
 
-        const pipelineModelCustomResource = new cdk.CustomResource(this, 'PipelineModelCustomResource', {
+        const pipelineModelCustomResource = new CustomResource(this, 'PipelineModelCustomResource', {
             serviceToken: pipelineModelCustomResourceProvider.serviceToken,
             properties: {
                 modelPackageName: modelPackageName.valueAsString,
                 sagemakerExecutionRole: executionRole.roleArn,
-                projectName: props.projectName
+                projectName: props.projectName,
             },
         });
 
@@ -116,7 +118,7 @@ export class ModelDeploymentStack extends cdk.Stack {
             ],
         });
 
-        endpointConfig.node.addDependency(pipelineModelCustomResource)
+        endpointConfig.node.addDependency(pipelineModelCustomResource);
 
         const endpoint = new sagemaker.CfnEndpoint(this, 'SageMakerModelEndpoint', {
             endpointConfigName: endpointConfig.getAtt('EndpointConfigName').toString(),
@@ -124,12 +126,12 @@ export class ModelDeploymentStack extends cdk.Stack {
 
         endpoint.node.addDependency(endpointConfig);
 
-        new cdk.CfnOutput(this, 'ModelEndpointOutput', {
+        new CfnOutput(this, 'ModelEndpointOutput', {
             value: endpoint.ref,
             exportName: `${props.modelEndpointExportNamePrefix}-${props.projectName}`,
         });
 
-        new cdk.CfnOutput(this, 'ModelEndpointNameOutput', {
+        new CfnOutput(this, 'ModelEndpointNameOutput', {
             value: endpoint.getAtt('EndpointName').toString(),
             exportName: `${props.modelEndpointExportNamePrefix}-Name-${props.projectName}`,
         });

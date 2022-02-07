@@ -1,0 +1,23 @@
+{
+  "name": "@aws-cdk-mlops-e2e/model-consumer-online-infrastructure",
+  "version": "1.0.0",
+  "license": "MIT",
+  "bin": {
+    "infrastructure": "bin/infrastructure.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "cdk": "cdk",
+    "lint": "eslint --max-warnings 0  .",
+    "lint:fix": "eslint --fix ."
+  },
+  "devDependencies": {
+    "aws-cdk": "2.10.0",
+    "esbuild": "0.14.19"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "2.10.0",
+    "constructs": "^10.0.54",
+    "source-map-support": "^0.5.21"
+  }
+}
