@@ -15,4 +15,4 @@ jobs:
       - run: npm install -g typescript
       - run: npm install -g yarn
       - run: pip install virtualenv
-      - run: bash scripts/ci_github.sh
+      - run: bash scripts/ci.sh

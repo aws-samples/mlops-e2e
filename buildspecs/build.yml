@@ -10,12 +10,10 @@ phases:
     runtime-versions:
       python: $pythonversion
       nodejs: $nodeversion
-    commands:
-      - npm install -g aws-cdk@1.130.0
 
   build:
     commands:
-      - bash scripts/test.sh
+      - bash scripts/ci.sh
       - bash scripts/copy_data_manifest.sh
       - bash scripts/build_deploy.sh
 

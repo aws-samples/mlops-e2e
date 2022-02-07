@@ -15,8 +15,10 @@ DATA_BUCKET_OBJECTS_COUNT=`aws s3 ls s3://${DATA_BUCKET_NAME}/ --recursive | wc 
 echo "DATA_BUCKET_OBJECTS_COUNT=${DATA_BUCKET_OBJECTS_COUNT}"
 
 if [ "${DATA_BUCKET_OBJECTS_COUNT}" == "0" ]; then
+     [ -d ${TEMP_FOLDER} ] || mkdir ${TEMP_FOLDER}
+
     echo "Download the testing data set"
-    wget --directory-prefix=${TEMP_FOLDER} https://s3-us-west-2.amazonaws.com/sparkml-mleap/data/abalone/abalone.csv
+    wget -O ${TEMP_FOLDER}/abalone.csv https://archive.ics.uci.edu/ml/machine-learning-databases/abalone/abalone.data
 
     echo "Upload the tersting data set to the data bucket under yyyy/mm/dd"
     aws s3 cp ${TEMP_FOLDER}/abalone.csv s3://${DATA_BUCKET_NAME}/$(date +%Y)/$(date +%m)/$(date +%d)/abalone.csv
