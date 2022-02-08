@@ -3,9 +3,7 @@
 set -e
 
 echo "Installing dependencies"
-yarn
+yarn install
 
 echo "Destroying CDK Stack"
-pushd ./infrastructure
-cdk destroy --force
-popd
+yarn cdk destroy --force
