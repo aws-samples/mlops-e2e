@@ -1,34 +1,24 @@
-/** *******************************************************************************************************************
-Copyright 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: MIT-0
+import { Stack } from 'aws-cdk-lib';
+import { Construct } from 'constructs';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as codecommit from 'aws-cdk-lib/aws-codecommit';
+import * as codebuild from 'aws-cdk-lib/aws-codebuild';
+import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
+import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                                                                              *
- ******************************************************************************************************************** */
-import * as cdk from '@aws-cdk/core';
-import * as s3 from '@aws-cdk/aws-s3';
-import * as iam from '@aws-cdk/aws-iam';
-import * as sns from '@aws-cdk/aws-sns';
-import * as codecommit from '@aws-cdk/aws-codecommit';
-import * as codebuild from '@aws-cdk/aws-codebuild';
-import * as codepipeline from '@aws-cdk/aws-codepipeline';
-import * as codepipeline_actions from '@aws-cdk/aws-codepipeline-actions';
+export type CodePipelineConstructPropsBase = {
+    readonly projectName: string;
+} & (CodePipelineConstructPropsGithubSource | CodePipelineConstructPropsCodeCommitSource);
 
 export type CodePipelineConstructProps = {
     readonly dataManifestBucket: s3.Bucket;
     readonly sageMakerArtifactBucket: s3.Bucket;
     readonly sageMakerExecutionRole: iam.Role;
-    readonly projectName: string;
-} & (CodePipelineConstructPropsGithubSource | CodePipelineConstructPropsCodeCommitSource);
+} & CodePipelineConstructPropsBase;
 
 export interface CodePipelineConstructPropsCodeCommitSource {
     readonly repoType: 'codecommit';
@@ -47,9 +37,9 @@ export interface CodePipelineConstructPropsGithubSource {
 /**
  * The CDK Construct provisions the code pipeline construct.
  */
-export class CodePipelineConstruct extends cdk.Construct {
+export class CodePipelineConstruct extends Construct {
     readonly pipeline: codepipeline.Pipeline;
-    constructor(scope: cdk.Construct, id: string, props: CodePipelineConstructProps) {
+    constructor(scope: Construct, id: string, props: CodePipelineConstructProps) {
         super(scope, id);
 
         this.pipeline = new codepipeline.Pipeline(this, 'MLOpsPipeline', {
@@ -103,7 +93,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/build.yml'),
             environment: {
                 buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-                privileged: true
+                privileged: true,
             },
         });
 
@@ -147,10 +137,10 @@ export class CodePipelineConstruct extends cdk.Construct {
                     'sagemaker:ListPipelineExecutionSteps',
                 ],
                 Resource: [
-                    `arn:aws:sagemaker:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:pipeline/${
+                    `arn:aws:sagemaker:${Stack.of(this).region}:${Stack.of(this).account}:pipeline/${
                         props.projectName
                     }`,
-                    `arn:aws:sagemaker:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:pipeline/${
+                    `arn:aws:sagemaker:${Stack.of(this).region}:${Stack.of(this).account}:pipeline/${
                         props.projectName
                     }/*`,
                 ],
@@ -209,8 +199,8 @@ export class CodePipelineConstruct extends cdk.Construct {
             runOrder: 1,
             notificationTopic: deploymentApprovalTopic,
             additionalInformation: `A new version of the model for project ${props.projectName} is waiting for approval`,
-            externalEntityLink: `https://${cdk.Stack.of(this).region}.console.aws.amazon.com/sagemaker/home?region=${
-                cdk.Stack.of(this).region
+            externalEntityLink: `https://${Stack.of(this).region}.console.aws.amazon.com/sagemaker/home?region=${
+                Stack.of(this).region
             }#/studio/`,
         });
 
@@ -221,17 +211,15 @@ export class CodePipelineConstruct extends cdk.Construct {
         deployRole.addToPolicy(
             new iam.PolicyStatement({
                 conditions: {
-                    "ForAnyValue:StringEquals": {
-                        "aws:CalledVia": [
-                            "cloudformation.amazonaws.com"
-                        ]
-                    }
+                    'ForAnyValue:StringEquals': {
+                        'aws:CalledVia': ['cloudformation.amazonaws.com'],
+                    },
                 },
-                actions: [ 
-                    'lambda:*Function*'
-                ],
+                actions: ['lambda:*Function*'],
                 resources: [
-                    `arn:aws:lambda:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:function:Deployment-${props.projectName}*`
+                    `arn:aws:lambda:${Stack.of(this).region}:${Stack.of(this).account}:function:Deployment-${
+                        props.projectName
+                    }*`,
                 ],
             })
         );
@@ -239,67 +227,65 @@ export class CodePipelineConstruct extends cdk.Construct {
         deployRole.addToPolicy(
             new iam.PolicyStatement({
                 conditions: {
-                    "ForAnyValue:StringEquals": {
-                        "aws:CalledVia": [
-                            "cloudformation.amazonaws.com"
-                        ]
-                    }
+                    'ForAnyValue:StringEquals': {
+                        'aws:CalledVia': ['cloudformation.amazonaws.com'],
+                    },
                 },
-                actions: [ 
-                    'sagemaker:*Endpoint*'
-                ],
-                resources: [
-                    '*'
-                ],
+                actions: ['sagemaker:*Endpoint*'],
+                resources: ['*'],
             })
         );
 
         deployRole.addToPolicy(
             new iam.PolicyStatement({
                 conditions: {
-                    "ForAnyValue:StringEquals": {
-                        "aws:CalledVia": [
-                            "cloudformation.amazonaws.com"
-                        ]
-                    }
+                    'ForAnyValue:StringEquals': {
+                        'aws:CalledVia': ['cloudformation.amazonaws.com'],
+                    },
                 },
-                actions: [ 
-                    'iam:*Role',
-                    'iam:*Policy*',
-                    'iam:*RolePolicy'
+                actions: ['iam:*Role', 'iam:*Policy*', 'iam:*RolePolicy'],
+                resources: [`arn:aws:iam::${Stack.of(this).account}:role/Deployment-${props.projectName}-*`],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: [
+                    'cloudformation:DescribeStacks',
+                    'cloudformation:CreateChangeSet',
+                    'cloudformation:DescribeChangeSet',
+                    'cloudformation:ExecuteChangeSet',
+                    'cloudformation:DescribeStackEvents',
+                    'cloudformation:DeleteChangeSet',
+                    'cloudformation:GetTemplate',
                 ],
                 resources: [
-                    `arn:aws:iam::${cdk.Stack.of(this).account}:role/Deployment-${props.projectName}-*`
+                    `arn:aws:cloudformation:${Stack.of(this).region}:${Stack.of(this).account}:stack/CDKToolkit/*`,
+                    `arn:aws:cloudformation:${Stack.of(this).region}:${Stack.of(this).account}:stack/Deployment-${
+                        props.projectName
+                    }/*`,
                 ],
             })
         );
 
         deployRole.addToPolicy(
             new iam.PolicyStatement({
-                actions: [ 
-                    "cloudformation:DescribeStacks",
-                    "cloudformation:CreateChangeSet",
-                    "cloudformation:DescribeChangeSet",
-                    "cloudformation:ExecuteChangeSet",
-                    "cloudformation:DescribeStackEvents",
-                    "cloudformation:DeleteChangeSet",
-                    "cloudformation:GetTemplate"
-                ],
-                resources: [
-                    `arn:aws:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/CDKToolkit/*`,
-                    `arn:aws:cloudformation:${cdk.Stack.of(this).region}:${cdk.Stack.of(this).account}:stack/Deployment-${props.projectName}/*`
-                ],
-            })
-        );
-
-        deployRole.addToPolicy(
-            new iam.PolicyStatement({
-                actions: [ 
-                    "s3:*Object",
-                    "s3:ListBucket",
-                    "s3:GetBucketLocation"
-                ],
+                actions: ['s3:*Object', 's3:ListBucket', 's3:GetBucketLocation'],
                 resources: ['arn:aws:s3:::cdktoolkit-stagingbucket-*'],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: ['ssm:GetParameter'],
+                resources: [`arn:aws:ssm:${Stack.of(this).region}:${Stack.of(this).account}:parameter/cdk-bootstrap/*`],
+            })
+        );
+
+        deployRole.addToPolicy(
+            new iam.PolicyStatement({
+                actions: ['sts:AssumeRole', 'iam:PassRole'],
+                resources: [`arn:aws:iam::${Stack.of(this).account}:role/cdk*`],
             })
         );
 
@@ -308,7 +294,7 @@ export class CodePipelineConstruct extends cdk.Construct {
             role: deployRole,
             environment: {
                 buildImage: codebuild.LinuxBuildImage.STANDARD_5_0,
-                privileged: true
+                privileged: true,
             },
         });
 

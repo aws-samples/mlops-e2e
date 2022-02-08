@@ -6,7 +6,7 @@ set -e
 
 pushd model_deploy
 
-yarn
-cdk synth
+yarn install
+yarn cdk synth
 
 popd

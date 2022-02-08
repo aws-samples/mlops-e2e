@@ -9,6 +9,7 @@ echo 'Installing dependencies'
 yarn
 
 echo 'Deploying Insfrastructure in your AWS account'
-cdk deploy --require-approval never
+yarn cdk bootstrap
+yarn cdk deploy --require-approval never
 
 popd

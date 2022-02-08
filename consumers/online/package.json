@@ -4,9 +4,33 @@
   "description": "An example on how to consume the ML Inference Model via online api",
   "license": "MIT-0",
   "private": true,
+  "scripts": {
+    "prebuild": "yarn workspace @aws-cdk-mlops-e2e/model-consumer-online-data-type run build",
+    "build": "yarn workspaces run build",
+    "start": "yarn workspace @aws-cdk-mlops-e2e/model-consumer-online-website run start",
+    "cdk": "yarn workspace @aws-cdk-mlops-e2e/model-consumer-online-infrastructure cdk",
+    "lint": "yarn workspaces run lint",
+    "lint:fix": "yarn workspaces run lint:fix"
+  },
+  "devDependencies": {
+    "@types/node": "17.0.9",
+    "@typescript-eslint/eslint-plugin": "^5.10.0",
+    "@typescript-eslint/parser": "^5.10.0",
+    "aws-cdk": "2.10.0",
+    "esbuild": "0.14.19",
+    "eslint": "8.7.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "ts-node": "10.4.0",
+    "typescript": "~4.5.5"
+  },
+  "resolutions": {
+    "nth-check": "2.0.1",
+    "postcss": "8.4.6"
+  },
   "workspaces": [
-    "infrastructure",
-    "website",
-    "data-type"
+    "packages/*"
   ]
 }

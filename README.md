@@ -8,7 +8,7 @@ This sample project uses a sample machine learning project to showcase how we ca
 * [NodeJS](https://nodejs.org/en/) (version 14 or higher)
 * [Yarn](https://yarnpkg.com/) (installed via `npm install -g yarn`)
 * [Typescript](https://www.typescriptlang.org/) (installed via `npm install -g typescript`) 
-* [AWS CDK](https://aws.amazon.com/cdk/) CLI (installed via `npm install -g aws-cdk`)
+* [AWS CDK v2](https://aws.amazon.com/cdk/) CLI (installed via `npm install -g aws-cdk`)
 * [AWS CLI](https://aws.amazon.com/cli/)  (version 2 or higher)
 * [AWS CLI Configuration](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) (configured via `aws configure`)
 
@@ -36,10 +36,9 @@ Please note that for simplicity, the API endpoint for the online model consumers
 
 ## Usage
 
-**Important**: this application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. No warranty is implied in this example.
+**Important**: this application uses various AWS services and there are costs associated with these services after the Free Tier usage - please see the AWS Pricing page for details. You are responsible for any AWS costs incurred. Please follow the **Cleanup** Section to clean up resources after your usage. No warranty is implied in this example.
 
 ### Bootstrap
-
 Run the command below to provision all the required infrastructure.
 
 ```
@@ -155,7 +154,7 @@ In the preprocessing job (specified in the `./src/preprocess.py` file), we lever
 
 ### Model Deploy
 
-The Model Deployment is managed by the CDK stack defined in the `./model_deploy` folder. 
+The Model Deployment is managed by the CDK stack defined in the `./model_deploy` folder. The model is deployed into **persistent** [SageMaker Real-time Inference endpoint](https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints.html). 
 
 ## ML Model Consumers
 ### Online Inference
