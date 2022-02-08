@@ -68,7 +68,6 @@ export class ModelDeploymentStack extends Stack {
             handler: 'handler',
             entry: path.join(__dirname, '../customResources/pipelineModel/index.ts'),
             timeout: Duration.minutes(1),
-            reservedConcurrentExecutions: 1,
             role: pipelineModelFunctionRole,
         });
 
