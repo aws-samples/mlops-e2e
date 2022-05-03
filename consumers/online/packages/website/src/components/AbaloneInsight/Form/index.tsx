@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: MIT-0
 import { FunctionComponent, useMemo } from 'react';
 import FormRenderer, { componentTypes, validatorTypes } from 'aws-northstar/components/FormRenderer';
-import { DataType } from '@aws-cdk-mlops-e2e/model-consumer-online-data-type';
+import { DataType } from '@aws-prototype/model-consumer-online-data-type';
 
 export interface AbaloneInsightFormProps {
     onSubmit: (data: DataType) => void;

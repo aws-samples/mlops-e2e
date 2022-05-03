@@ -1,5 +1,5 @@
 {
-  "name": "@aws-cdk-mlops-e2e/model-consumer-online-website",
+  "name": "@aws-prototype/model-consumer-online-website",
   "version": "1.0.0",
   "license": "MIT-0",
   "private": true,
@@ -11,7 +11,7 @@
     "web-vitals": "^2.1.4"
   },
   "dependencies": {
-    "@aws-cdk-mlops-e2e/model-consumer-online-data-type": "1.0.0",
+    "@aws-prototype/model-consumer-online-data-type": "1.0.0",
     "aws-northstar": "^1.3.12",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

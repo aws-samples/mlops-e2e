@@ -6,7 +6,7 @@ import Box from 'aws-northstar/layouts/Box';
 import Alert from 'aws-northstar/components/Alert';
 import AbaloneInsightForm from '../../components/AbaloneInsight/Form';
 import AbaloneInsightResult from '../../components/AbaloneInsight/Result';
-import { DataType } from '@aws-cdk-mlops-e2e/model-consumer-online-data-type';
+import { DataType } from '@aws-prototype/model-consumer-online-data-type';
 import { apiPost } from '../../utils/api';
 
 const AbaloneInsight: FunctionComponent = () => {

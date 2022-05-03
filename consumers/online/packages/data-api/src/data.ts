@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
 import * as AWS from 'aws-sdk';
-import { DataType, AddLabelRequest } from '@aws-cdk-mlops-e2e/model-consumer-online-data-type';
+import { DataType, AddLabelRequest } from '@aws-prototype/model-consumer-online-data-type';
 
 const sageMakerEndpointName = process.env.SAGEMAKER_ENDPOINT_NAME || '';
 const dataTableName = process.env.DATA_TABLE_NAME || '';

@@ -5,10 +5,10 @@
   "license": "MIT-0",
   "private": true,
   "scripts": {
-    "prebuild": "yarn workspace @aws-cdk-mlops-e2e/model-consumer-online-data-type run build",
+    "prebuild": "yarn workspace @aws-prototype/model-consumer-online-data-type run build",
     "build": "yarn workspaces run build",
-    "start": "yarn workspace @aws-cdk-mlops-e2e/model-consumer-online-website run start",
-    "cdk": "yarn workspace @aws-cdk-mlops-e2e/model-consumer-online-infrastructure cdk",
+    "start": "yarn workspace @aws-prototype/model-consumer-online-website run start",
+    "cdk": "yarn workspace @aws-prototype/model-consumer-online-infrastructure cdk",
     "lint": "yarn workspaces run lint",
     "lint:fix": "yarn workspaces run lint:fix"
   },

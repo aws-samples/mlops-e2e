@@ -1,5 +1,5 @@
 {
-  "name": "@aws-cdk-mlops-e2e/model-deployment",
+  "name": "@aws-prototype/model-deployment",
   "version": "1.0.0",
   "private": true,
   "license": "MIT-0",

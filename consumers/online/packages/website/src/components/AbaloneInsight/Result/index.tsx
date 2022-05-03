@@ -6,7 +6,7 @@ import Box from 'aws-northstar/layouts/Box';
 import Button from 'aws-northstar/components/Button';
 import HeadingStripe from 'aws-northstar/components/HeadingStripe';
 import FormRenderer, { componentTypes, validatorTypes } from 'aws-northstar/components/FormRenderer';
-import { DataType } from '@aws-cdk-mlops-e2e/model-consumer-online-data-type';
+import { DataType } from '@aws-prototype/model-consumer-online-data-type';
 import Alert from 'aws-northstar/components/Alert';
 
 export interface AbaloneInsightResultProps {

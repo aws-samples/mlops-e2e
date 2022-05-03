@@ -1,5 +1,5 @@
 {
-  "name": "@aws-cdk-mlops-e2e/infrastracture",
+  "name": "@aws-prototype/infrastracture",
   "version": "1.0.0",
   "license": "MIT",
   "bin": {
