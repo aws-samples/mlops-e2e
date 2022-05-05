@@ -42,6 +42,7 @@ from sagemaker.processing import (
 )
 from sagemaker.sklearn import SKLearnModel
 from sagemaker.sklearn.processing import SKLearnProcessor
+from sagemaker.workflow.functions import Join
 from sagemaker.workflow.conditions import ConditionLessThanOrEqualTo
 from sagemaker.workflow.condition_step import (
     ConditionStep,
@@ -246,9 +247,9 @@ def get_pipeline(
         framework_version="0.23-1",
         py_version="py3",
         sagemaker_session=sagemaker_session,
-        model_data=step_process.properties.ProcessingOutputConfig.Outputs[
+        model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
                     "model"
-                ].S3Output.S3Uri,
+                ].S3Output.S3Uri, "model.tar.gz"]),
     )
 
     inference_model = Model(
