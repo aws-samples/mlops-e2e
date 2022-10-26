@@ -181,6 +181,10 @@ export class CodePipelineConstruct extends Construct {
                     type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
                     value: props.projectName,
                 },
+                PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: {
+                    type: codebuild.BuildEnvironmentVariableType.PLAINTEXT,
+                    value: 'python',
+                },
             },
         });
 
