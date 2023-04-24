@@ -1,0 +1,7 @@
+{
+  "name": "model-deploy-custom-resource-pipeline-model",
+  "version": "1.0.0",
+  "dependencies": {
+    "aws-sdk": "^2"
+  }
+}
