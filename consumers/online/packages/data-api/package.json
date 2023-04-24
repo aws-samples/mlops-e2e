@@ -4,7 +4,8 @@
   "private": true,
   "license": "MIT-0",
   "dependencies": {
-    "@aws-prototype/model-consumer-online-data-type": "1.0.0"
+    "@aws-prototype/model-consumer-online-data-type": "1.0.0",
+    "aws-sdk": "^2"
   },
   "scripts": {
     "build": "tsc",

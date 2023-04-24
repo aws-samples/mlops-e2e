@@ -6,7 +6,7 @@ set -e
 
 pushd model_deploy
 
-yarn install
+yarn install --frozen-lockfile
 yarn cdk synth
 
 popd

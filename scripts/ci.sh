@@ -5,21 +5,36 @@ set -e
 bash ./scripts/test.sh
 
 pushd ./infrastructure
-yarn install
+
+pushd ./functions/dataSourceMonitor
+yarn install --frozen-lockfile
+popd
+
+yarn install --frozen-lockfile
 yarn lint
 yarn build
 yarn cdk synth
 popd
 
 pushd ./model_deploy
-yarn install
+
+pushd ./customResources/pipelineModel
+yarn install --frozen-lockfile
+popd
+
+yarn install --frozen-lockfile
 yarn lint
 yarn build
 yarn cdk synth
 popd
 
 pushd ./consumers/online
-yarn install
+
+pushd ./packages/data-api
+yarn install --frozen-lockfile
+popd
+
+yarn install --frozen-lockfile
 yarn lint
 yarn build
 yarn cdk synth
