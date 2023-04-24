@@ -3,7 +3,7 @@ version: 0.2
 env:
   variables:
     nodeversion: 16
-    pythonversion: 3.9
+    pythonversion: 3.10
 
 phases:
   install:
