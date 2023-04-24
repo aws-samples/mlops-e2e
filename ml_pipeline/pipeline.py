@@ -122,7 +122,7 @@ def get_pipeline(
 
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
-        framework_version="0.23-1",
+        framework_version="1.2-1",
         instance_type=processing_instance_type,
         instance_count=processing_instance_count,
         base_job_name=f"{base_job_prefix}/sklearn-preprocess",
