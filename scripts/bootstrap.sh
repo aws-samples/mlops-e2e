@@ -7,7 +7,7 @@ pushd ./infrastructure
 echo 'Installing dependencies'
 yarn install --frozen-lockfile
 
-pushd ./infrastructure/functions/dataSourceMonitor
+pushd ./functions/dataSourceMonitor
 echo 'Installing dependencies for functions'
 yarn install --frozen-lockfile
 popd
