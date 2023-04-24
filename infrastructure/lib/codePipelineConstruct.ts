@@ -92,7 +92,7 @@ export class CodePipelineConstruct extends Construct {
         const buildProject = new codebuild.PipelineProject(this, 'CIBuild', {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/build.yml'),
             environment: {
-                buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+                buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
                 privileged: true,
             },
         });
@@ -159,7 +159,7 @@ export class CodePipelineConstruct extends Construct {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/pipeline.yml'),
             role: mlPipelineRole,
             environment: {
-                buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+                buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
             },
         });
 
@@ -297,7 +297,7 @@ export class CodePipelineConstruct extends Construct {
             buildSpec: codebuild.BuildSpec.fromSourceFilename('./buildspecs/deploy.yml'),
             role: deployRole,
             environment: {
-                buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+                buildImage: codebuild.LinuxBuildImage.STANDARD_6_0,
                 privileged: true,
             },
         });
