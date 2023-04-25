@@ -49,6 +49,7 @@ export class WebsiteConstruct extends Construct {
         const cloudFrontLoggingBucket = new s3.Bucket(this, 'S3BucketForWebsiteLogging', {
             blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
             encryption: s3.BucketEncryption.S3_MANAGED,
+            objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_PREFERRED,
         });
 
         const cloudFrontDistribution = new cloudfront.CloudFrontWebDistribution(this, 'WebsiteCloudFront', {
