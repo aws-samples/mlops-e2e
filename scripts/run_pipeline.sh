@@ -15,7 +15,7 @@ virtualenv -p python3 $VIRTUAL_ENV
 
 #Install requirements
 pip install -r requirements.txt
-pip install sagemaker==2.88.2
+pip install sagemaker==2.148.0
 
 echo "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE

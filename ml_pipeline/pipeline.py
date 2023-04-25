@@ -151,7 +151,7 @@ def get_pipeline(
     image_uri = sagemaker.image_uris.retrieve(
         framework="xgboost",
         region=region,
-        version="1.0-1",
+        version="1.5-1",
         py_version="py3",
         instance_type=training_instance_type,
     )
@@ -244,7 +244,7 @@ def get_pipeline(
         name='SKLearnTransform',
         entry_point=os.path.join(BASE_DIR, "..", "src", "transform.py"),
         role=role,
-        framework_version="0.23-1",
+        framework_version="1.2-1",
         py_version="py3",
         sagemaker_session=sagemaker_session,
         model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
@@ -256,7 +256,7 @@ def get_pipeline(
         image_uri=sagemaker.image_uris.retrieve(
             framework="xgboost",
             region=region,
-            version="1.0-1",
+            version="1.5-1",
             py_version="py3",
             instance_type="ml.t2.medium",
         ),
