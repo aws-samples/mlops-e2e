@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    pythonversion: 3.8
+    pythonversion: 3.10
 
 phases:
   install:

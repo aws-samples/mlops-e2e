@@ -122,7 +122,7 @@ def get_pipeline(
 
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
-        framework_version="0.23-1",
+        framework_version="1.2-1",
         instance_type=processing_instance_type,
         instance_count=processing_instance_count,
         base_job_name=f"{base_job_prefix}/sklearn-preprocess",
@@ -151,7 +151,7 @@ def get_pipeline(
     image_uri = sagemaker.image_uris.retrieve(
         framework="xgboost",
         region=region,
-        version="1.0-1",
+        version="1.2-1",
         py_version="py3",
         instance_type=training_instance_type,
     )
@@ -172,7 +172,7 @@ def get_pipeline(
         gamma=4,
         min_child_weight=6,
         subsample=0.7,
-        silent=0,
+        verbosity=1,
     )
     step_train = TrainingStep(
         name="TrainModel",
@@ -244,7 +244,7 @@ def get_pipeline(
         name='SKLearnTransform',
         entry_point=os.path.join(BASE_DIR, "..", "src", "transform.py"),
         role=role,
-        framework_version="0.23-1",
+        framework_version="1.2-1",
         py_version="py3",
         sagemaker_session=sagemaker_session,
         model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
@@ -256,7 +256,7 @@ def get_pipeline(
         image_uri=sagemaker.image_uris.retrieve(
             framework="xgboost",
             region=region,
-            version="1.0-1",
+            version="1.2-1",
             py_version="py3",
             instance_type="ml.t2.medium",
         ),
