@@ -172,7 +172,7 @@ def get_pipeline(
         gamma=4,
         min_child_weight=6,
         subsample=0.7,
-        silent=0,
+        verbosity=1,
     )
     step_train = TrainingStep(
         name="TrainModel",
