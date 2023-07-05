@@ -27,8 +27,9 @@
     "typescript": "~4.5.5"
   },
   "resolutions": {
-    "nth-check": "2.0.1",
-    "postcss": "8.4.6"
+    "nth-check": "^2.0.1",
+    "postcss": "^8.4.6",
+    "semver": "^7.5.3"
   },
   "workspaces": [
     "packages/*"
