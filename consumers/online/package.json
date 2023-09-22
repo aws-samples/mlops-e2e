@@ -1,5 +1,5 @@
 {
-  "name": "mlops-model-consumer-online",
+  "name": "@aws-prototype/mlops-model-consumer-online",
   "version": "1.0.0",
   "description": "An example on how to consume the ML Inference Model via online api",
   "license": "MIT-0",

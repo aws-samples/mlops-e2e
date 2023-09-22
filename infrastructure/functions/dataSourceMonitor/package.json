@@ -1,5 +1,5 @@
 {
-  "name": "data-source-manifest",
+  "name": "@aws-prototype/data-source-manifest",
   "version": "1.0.0",
   "dependencies": {
     "@types/archiver": "^5.1.1",
