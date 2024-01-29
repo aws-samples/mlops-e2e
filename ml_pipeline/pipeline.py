@@ -151,8 +151,8 @@ def get_pipeline(
         framework_version=FRAMEWORK_VERSION,
         instance_type="ml.t3.large",
         role=role,
-        sagemaker_session=sagemaker_session,
-        output_path="s3://mlopsinfrastracturestack--sagemakerconstructsagema-b5kdwdejsosj/",
+        # sagemaker_session=sagemaker_session,
+        # output_path="s3://mlopsinfrastracturestack--sagemakerconstructsagema-b5kdwdejsosj/",
         hyperparameters={"alpha": 10}
     )
     print("FINISH - SKLEARN")
