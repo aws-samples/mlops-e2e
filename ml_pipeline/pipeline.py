@@ -145,14 +145,15 @@ def get_pipeline(
 
     # training step for generating model artifacts
     script_path = os.path.join(BASE_DIR, "..", "src", "train.py")
+    model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Train"
     FRAMEWORK_VERSION = "1.2-1"
     ridge_train = SKLearn(
         entry_point=script_path,
         framework_version=FRAMEWORK_VERSION,
         instance_type="ml.t3.large",
-        role=role,
+        output_path=model_path,
         sagemaker_session=sagemaker_session,
-        output_path='s3://mlopsinfrastracturestack--sagemakerconstructsagema-b5kdwdejsosj/training_model/model/',
+        role=role,
         hyperparameters={"alpha": 10}
     )
     print("FINISH - SKLEARN")
