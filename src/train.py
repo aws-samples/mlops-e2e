@@ -5,8 +5,6 @@ import joblib
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.linear_model import Ridge
 
-# Configure logging
-logging.basicConfig(level=print, format='%(asctime)s - %(levelname)s - %(message)s')
 
 if __name__ == '__main__':
     print('Starting training job...')
