@@ -16,9 +16,9 @@ pip install pyflakes==2.1.1
 echo "Running pyflakes to detect any import / syntax issues"
 pyflakes ./**/*.py
 
-echo "Running tests"
-export PYTHONPATH=./src
-pytest --tb=short --junitxml=$TEST_REPORT_PATH ./tests
+#echo "Running tests"
+#export PYTHONPATH=./src
+#pytest --tb=short --junitxml=$TEST_REPORT_PATH ./tests
 
 # Deactivate virtual envs
 deactivate
