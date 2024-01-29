@@ -29,7 +29,7 @@ import boto3
 import sagemaker
 import sagemaker.session
 
-from sagemaker.sklearn.estimator import SKLearn
+# from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
 # from sagemaker.model_metrics import (
 #     MetricsSource,
