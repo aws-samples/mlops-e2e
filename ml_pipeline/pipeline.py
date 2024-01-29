@@ -62,8 +62,8 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 from sagemaker.estimator import Estimator
 
 from sagemaker.workflow.parameters import (
-    ParameterInteger,
-    ParameterString,
+    # ParameterInteger,
+    ParameterString
 )
 
 def get_session(region, default_bucket):
