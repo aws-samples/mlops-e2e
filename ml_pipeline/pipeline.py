@@ -112,16 +112,16 @@ def get_pipeline(
         role = sagemaker.session.get_execution_role(sagemaker_session)
 
     # parameters for pipeline execution
-    processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
-    processing_instance_type = ParameterString(
-        name="ProcessingInstanceType", default_value="ml.t3.large"
-    )
+    # processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
+    # processing_instance_type = ParameterString(
+    #     name="ProcessingInstanceType", default_value="ml.t3.large"
+    # )
     training_instance_type = ParameterString(
         name="TrainingInstanceType", default_value="ml.t3.large"
     )
-    model_approval_status = ParameterString(
-        name="ModelApprovalStatus", default_value="Approved"
-    )
+    # model_approval_status = ParameterString(
+    #     name="ModelApprovalStatus", default_value="Approved"
+    # )
 
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
