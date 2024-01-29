@@ -10,7 +10,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     # Sagemaker specific arguments. Defaults are set in the environment variables.
-    parser.add_argument('--model-dir', type=str, default=os.environ['SM_MODEL_DIR'])
+    parser.add_argument('--sm_model_dir', type=str, default=os.environ['SM_MODEL_DIR'])
     parser.add_argument('--train', type=str, default=os.environ['SM_CHANNEL_TRAINING'])
     parser.add_argument("--output-data-dir", type=str, default=os.environ["SM_OUTPUT_DATA_DIR"])
     parser.add_argument('--alpha', type=int, default=10)
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     # args, _ = parser.parse_known_args()
 
     alpha = args.alpha
-    model_dir = args.model_dir
+    model_dir = args.sm_model_dir
     train_dataset_dir = args.train
 
     # Load train datasets
