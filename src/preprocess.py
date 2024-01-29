@@ -24,39 +24,44 @@ import boto3
 import numpy as np
 import pandas as pd
 
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
 
 import joblib
 import tarfile
 
+from src.utils import add_lagged_features, add_multistep_target, ffill_imputer, cyclic_encode_weekday, \
+    cyclic_encode_month
+
 feature_columns_names = [
-    "sex",
-    "length",
-    "diameter",
-    "height",
-    "whole_weight",
-    "shucked_weight",
-    "viscera_weight",
-    "shell_weight",
+    'Date',
+    'location_id',
+    'location_parking_type_id'
+    'count_of_trx'
 ]
 
-label_column = "rings"
+label_column = ['count_of_trx_1_day_ahead', 'count_of_trx_2_day_ahead', 'count_of_trx_3_day_ahead',
+                'count_of_trx_4_day_ahead', 'count_of_trx_5_day_ahead', 'count_of_trx_6_day_ahead',
+                'count_of_trx_7_day_ahead', 'count_of_trx_8_day_ahead', 'count_of_trx_9_day_ahead',
+                'count_of_trx_10_day_ahead', 'count_of_trx_11_day_ahead', 'count_of_trx_12_day_ahead',
+                'count_of_trx_13_day_ahead', 'count_of_trx_14_day_ahead']
 
 feature_columns_dtype = {
-    "sex": str,
-    "length": np.float64,
-    "diameter": np.float64,
-    "height": np.float64,
-    "whole_weight": np.float64,
-    "shucked_weight": np.float64,
-    "viscera_weight": np.float64,
-    "shell_weight": np.float64,
+    "Date": np.datetime64,
+    "location_id": np.int64,
+    "location_parking_type_id": np.int64,
+    "count_of_trx": np.int64
 }
 
-label_column_dtype = {"rings": np.float64}
+label_column_dtype = {'count_of_trx_1_day_ahead': np.int64, 'count_of_trx_2_day_ahead': np.int64,
+                      'count_of_trx_3_day_ahead': np.int64, 'count_of_trx_4_day_ahead': np.int64,
+                      'count_of_trx_5_day_ahead': np.int64, 'count_of_trx_6_day_ahead': np.int64,
+                      'count_of_trx_7_day_ahead': np.int64, 'count_of_trx_8_day_ahead': np.int64,
+                      'count_of_trx_9_day_ahead': np.int64, 'count_of_trx_10_day_ahead': np.int64,
+                      'count_of_trx_11_day_ahead': np.int64, 'count_of_trx_12_day_ahead': np.int64,
+                      'count_of_trx_13_day_ahead': np.int64, 'count_of_trx_14_day_ahead': np.int64}
+
 
 class DataProcessor:
     @property
@@ -66,29 +71,34 @@ class DataProcessor:
     def __init__(self, input_data) -> None:
         self._input_data = input_data
         self._logger.debug("Defining transformers.")
-        numeric_features = list(feature_columns_names)
-        numeric_features.remove("sex")
+        # prepare the data for time series forecasting
+        self._input_data = self.preprocess_data()
+        # specify numerical features
+        numeric_features = ['count_of_trx_lag_1', 'count_of_trx_lag_7', 'count_of_trx_lag_14']
+
         numeric_transformer = Pipeline(
-            steps=[("imputer", SimpleImputer(strategy="median")), ("scaler", StandardScaler())]
+            steps=[("scaler", StandardScaler())]
         )
 
-        categorical_features = ["sex"]
+        categorical_features = ["location_id"]
         categorical_transformer = Pipeline(
-            steps=[
-                ("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
-                ("onehot", OneHotEncoder(handle_unknown="ignore")),
-            ]
-        )
+            steps=[("onehot", OneHotEncoder(handle_unknown="ignore"))])
+
+        # Pipeline with FunctionTransformer for cyclic encoding
+        cyclic_encoder_day = FunctionTransformer(cyclic_encode_weekday)
+        cyclic_encoder_month = FunctionTransformer(cyclic_encode_month)
 
         self._preprocess = ColumnTransformer(
             transformers=[
-                ("num", numeric_transformer, numeric_features),
                 ("cat", categorical_transformer, categorical_features),
+                ("num", numeric_transformer, numeric_features),
+                ("cyclic_day", cyclic_encoder_day, make_column_selector(pattern="weekday")),
+                ("cyclic_month", cyclic_encoder_month, make_column_selector(pattern="month"))
             ]
         )
 
         self._logger.debug("Fitting transforms.")
-        self._input_data_y = self._input_data.pop("rings")
+        self._input_data_y = self._input_data[label_column]
         self._preprocess.fit(self._input_data)
 
     def save_model(self, model_path):
@@ -101,10 +111,11 @@ class DataProcessor:
 
     def process(self):
         self._logger.debug("Applying transforms.")
+        x_location_features = self._input_data[["location_id"]].copy().to_numpy()
         x_pre = self._preprocess.transform(self._input_data)
-        y_pre = self._input_data_y.to_numpy().reshape(len(self._input_data_y), 1)
+        y_pre = self._input_data_y.to_numpy()  # .reshape(len(self._input_data_y), 1)
 
-        return np.concatenate((y_pre, x_pre), axis=1)
+        return np.concatenate((x_location_features, x_pre, y_pre), axis=1)
 
     def merge_two_dicts(x, y):
         """Merges two dicts, returning a new copy."""
@@ -112,7 +123,41 @@ class DataProcessor:
         z.update(y)
         return z
 
-class DataBuilder: 
+    def preprocess_data(self) -> pd.DataFrame:
+        """ Add feature lags and prediction steps for time series forecasting  """
+
+        # impute missing values
+        df = ffill_imputer(self._input_data, feature_columns="count_of_trx")
+
+        # Format count_of_trx and Date
+        df["count_of_trx"] = df["count_of_trx"].astype("Int64")
+        df['Date'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+
+        # exclude the data after the day-1 of the run
+        today = pd.Timestamp("today").strftime("%Y-%m-%d")
+        df = df[df["Date"] < today].copy()
+
+        # Add time-based features
+        df['month'] = df['Date'].dt.month
+        df['weekday'] = df['Date'].dt.dayofweek
+
+        # Add lags for Reservations
+        df = df.groupby(['location_id', 'location_parking_type_id']).apply(add_lagged_features, column='count_of_trx',
+                                                                           lags=[1, 7, 14]).reset_index(drop=True)
+
+        # Add a multistep target for Reservations
+        df = df.groupby(['location_id', 'location_parking_type_id']).apply(add_multistep_target, 'count_of_trx',
+                                                                           multisteps=14).reset_index(drop=True)
+        # Set Date as Index
+        df.set_index('Date', inplace=True)
+
+        # Drop Nans
+        df.dropna(inplace=True)
+
+        return df
+
+
+class DataBuilder:
     @property
     def _logger(self):
         return logging.getLogger(__name__)
@@ -150,10 +195,52 @@ class DataBuilder:
             fn,
             header=None,
             names=feature_columns_names + [label_column],
-            dtype=DataProcessor.merge_two_dicts(feature_columns_dtype, label_column_dtype),
+            dtype=feature_columns_dtype
         )
-        os.unlink(fn)   
+        os.unlink(fn)
         return df
+
+
+class DataSplitter:
+    @property
+    def _logger(self):
+        return logging.getLogger(__name__)
+
+    def __init__(self, input_data) -> None:
+        self._input_data = input_data
+        self._logger.debug("Splitting data into train and test")
+
+    def split_data(self):
+        """
+        Split time series data into train and test sets
+        :param input_data: NumPy array containing time series data
+        :return: NumPy arrays for training and testing sets
+        """
+        train_time_list = []
+        test_time_list = []
+
+        unique_sites = np.unique(self._input_data[:, 0])
+
+        # Iterate over each unique site
+        for site in unique_sites:
+            site_data = self._input_data[self._input_data[:, 0] == site]
+
+            # Determine the train-test split for the specific site
+            # ======================================================================================
+            train_size_site = int(0.80 * len(site_data))
+            train_data_site = site_data[:train_size_site, 1:]
+            test_data_site = site_data[train_size_site:, 1:]
+
+            # Append the data to respective lists
+            train_time_list.append(train_data_site[:, :])
+            test_time_list.append(test_data_site[:, :])
+
+        # Concatenate the data
+        train_time_combined = np.concatenate(train_time_list, axis=0)
+        test_time_combined = np.concatenate(test_time_list, axis=0)
+
+        return train_time_combined, test_time_combined
+
 
 def run_main():
     logger = logging.getLogger()
@@ -176,20 +263,16 @@ def run_main():
 
     len_data_output = len(data_output)
     logger.info("Splitting %d rows of data into train, validation, test datasets.", len_data_output)
-    np.random.shuffle(data_output)
-    train, validation, test = np.split(
-        data_output, [int(0.7 * len_data_output), int(0.85 * len_data_output)]
-    )
+    data_splitter = DataSplitter(data_output)
+    train, test = data_splitter.split_data()
 
     logger.info("Writing out datasets to %s.", base_dir)
     pd.DataFrame(train).to_csv(f"{base_dir}/train/train.csv", header=False, index=False)
-    pd.DataFrame(validation).to_csv(
-        f"{base_dir}/validation/validation.csv", header=False, index=False
-    )
     pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)
 
     logger.info("Saving the preprocessing model to %s", base_dir)
     data_processor.save_model(os.path.join(base_dir, "model"))
+
 
 if __name__ == "__main__":
     run_main()
