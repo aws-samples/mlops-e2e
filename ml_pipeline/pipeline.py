@@ -323,7 +323,7 @@ def get_pipeline(
         # estimator=xgb_train,
         content_types=["text/csv"],
         response_types=["text/csv"],
-        transform_instances=["ml.t3.large"],
+        transform_instances=["ml.m5.large"],
         model_package_group_name=model_package_group_name,
         approval_status="Approved",
         # model_metrics=model_metrics,
