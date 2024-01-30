@@ -192,7 +192,8 @@ class DataBuilder:
             fn,
             header=None,
             names=feature_columns_names + label_column,
-            dtype=feature_columns_dtype
+            dtype=feature_columns_dtype,
+            parse_dates=['Date']
         )
         os.unlink(fn)
         return df
