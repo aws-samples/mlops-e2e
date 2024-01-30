@@ -65,10 +65,10 @@ from sagemaker.workflow.step_collections import RegisterModel
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
-from sagemaker.workflow.parameters import (
-    # ParameterInteger,
-    ParameterString
-)
+# from sagemaker.workflow.parameters import (
+#     ParameterInteger,
+#     ParameterString
+# )
 
 def get_session(region, default_bucket):
     """Gets the sagemaker session based on the region.
