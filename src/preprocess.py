@@ -191,7 +191,7 @@ class DataBuilder:
         df = pd.read_csv(
             fn,
             header=None,
-            names=feature_columns_names + [label_column],
+            names=feature_columns_names + label_column,
             dtype=feature_columns_dtype
         )
         os.unlink(fn)
