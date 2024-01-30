@@ -34,7 +34,7 @@ import tarfile
 feature_columns_names = [
     'Date',
     'location_id',
-    'location_parking_type_id'
+    'location_parking_type_id',
     'count_of_trx'
 ]
 
