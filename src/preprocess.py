@@ -190,8 +190,9 @@ class DataBuilder:
         self._logger.debug("Reading raw input data.")
         df = pd.read_csv(
             fn,
+            usecols=feature_columns_names,
             header=None,
-            names=feature_columns_names + label_column,
+            names=feature_columns_names,
             dtype=feature_columns_dtype,
             parse_dates=['Date']
         )
