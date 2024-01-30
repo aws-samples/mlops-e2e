@@ -31,14 +31,17 @@ import sagemaker.session
 
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
-from sagemaker.model_metrics import (
-    MetricsSource,
-    ModelMetrics,
-)
+# from sagemaker.model_metrics import (
+#     MetricsSource,
+#     ModelMetrics,
+# )from sagemaker.model_metrics import (
+#     MetricsSource,
+#     ModelMetrics,
+# )
 from sagemaker.processing import (
     ProcessingInput,
-    ProcessingOutput,
-    ScriptProcessor
+    ProcessingOutput
+# ,    ScriptProcessor
 )
 from sagemaker.sklearn import SKLearnModel
 from sagemaker.sklearn.processing import SKLearnProcessor
@@ -63,7 +66,7 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 from sagemaker.workflow.parameters import (
-    ParameterInteger,
+    # ParameterInteger,
     ParameterString
 )
 
@@ -114,12 +117,12 @@ def get_pipeline(
 
     # parameters for pipeline execution
     # processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
-    processing_instance_type = ParameterString(
-        name="ProcessingInstanceType", default_value="ml.t3.large"
-    )
-    training_instance_type = ParameterString(
-        name="TrainingInstanceType", default_value="ml.t3.large"
-    )
+    # processing_instance_type = ParameterString(
+    #     name="ProcessingInstanceType", default_value="ml.t3.large"
+    # )
+    # training_instance_type = ParameterString(
+    #     name="TrainingInstanceType", default_value="ml.t3.large"
+    # )
     # model_approval_status = ParameterString(
     #     name="ModelApprovalStatus", default_value="Approved"
     # )
@@ -316,8 +319,8 @@ def get_pipeline(
 
     step_register_inference_model = RegisterModel(
         name="RegisterModel",
-        # estimator=ridge_train,
-        estimator=xgb_train,
+        estimator=ridge_train,
+        # estimator=xgb_train,
         content_types=["text/csv"],
         response_types=["text/csv"],
         transform_instances=["ml.t3.large"],
