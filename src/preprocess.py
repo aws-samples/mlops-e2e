@@ -31,7 +31,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 import joblib
 import tarfile
 
-from src.utils import add_lagged_features, add_multistep_target, ffill_imputer, cyclic_encode_weekday, \
+from utils import add_lagged_features, add_multistep_target, ffill_imputer, cyclic_encode_weekday, \
     cyclic_encode_month
 
 feature_columns_names = [
