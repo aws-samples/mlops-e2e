@@ -130,7 +130,7 @@ def get_pipeline(
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
         framework_version="1.2-1",
-        instance_type="ml.t3.large",
+        instance_type="ml.m5.large",
         instance_count=1,
         base_job_name=f"{base_job_prefix}/sklearn-preprocess",
         sagemaker_session=sagemaker_session,
@@ -160,7 +160,7 @@ def get_pipeline(
     ridge_train = SKLearn(
         entry_point=script_path,
         framework_version=FRAMEWORK_VERSION,
-        instance_type="ml.t3.large",
+        instance_type="ml.m5.large",
         output_path=model_path,
         sagemaker_session=sagemaker_session,
         role=role,
