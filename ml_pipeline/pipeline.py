@@ -29,12 +29,12 @@ import boto3
 import sagemaker
 import sagemaker.session
 
-# from sagemaker.sklearn.estimator import SKLearn
+from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
-# from sagemaker.model_metrics import (
-#     MetricsSource,
-#     ModelMetrics,
-# )
+from sagemaker.model_metrics import (
+    MetricsSource,
+    ModelMetrics,
+)
 from sagemaker.processing import (
     ProcessingInput,
     ProcessingOutput,
@@ -61,10 +61,9 @@ from sagemaker.workflow.step_collections import RegisterModel
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-from sagemaker.estimator import Estimator
 
 from sagemaker.workflow.parameters import (
-    # ParameterInteger,
+    ParameterInteger,
     ParameterString
 )
 
@@ -151,80 +150,80 @@ def get_pipeline(
     f.close()
     print("FINISH - PROCESSING STEP")
 
-    # # training step for generating model artifacts
-    # script_path = os.path.join(BASE_DIR, "..", "src", "train.py")
-    # model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Train"
-    # FRAMEWORK_VERSION = "1.2-1"
-    # ridge_train = SKLearn(
-    #     entry_point=script_path,
-    #     framework_version=FRAMEWORK_VERSION,
-    #     instance_type="ml.t3.large",
-    #     output_path=model_path,
-    #     sagemaker_session=sagemaker_session,
-    #     role=role,
-    #     hyperparameters={"alpha": 10}
-    # )
-    # print("FINISH - SKLEARN")
-    #
-    # step_train = TrainingStep(
-    #     name="TrainModel",
-    #     estimator=ridge_train,
-    #     inputs={
-    #         "train": TrainingInput(
-    #             s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
-    #                 "train"
-    #             ].S3Output.S3Uri,
-    #             content_type="text/csv",
-    #         )
-    #     }
-    # )
-
     # training step for generating model artifacts
+    script_path = os.path.join(BASE_DIR, "..", "src", "train.py")
     model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Train"
-    image_uri = sagemaker.image_uris.retrieve(
-        framework="xgboost",
-        region=region,
-        version="1.2-1",
-        py_version="py3",
-        instance_type=training_instance_type,
-    )
-    xgb_train = Estimator(
-        image_uri=image_uri,
-        instance_type=training_instance_type,
-        instance_count=1,
+    FRAMEWORK_VERSION = "1.2-1"
+    ridge_train = SKLearn(
+        entry_point=script_path,
+        framework_version=FRAMEWORK_VERSION,
+        instance_type="ml.t3.large",
         output_path=model_path,
-        base_job_name=f"{base_job_prefix}/train",
         sagemaker_session=sagemaker_session,
         role=role,
+        hyperparameters={"alpha": 10}
     )
-    xgb_train.set_hyperparameters(
-        objective="reg:linear",
-        num_round=50,
-        max_depth=5,
-        eta=0.2,
-        gamma=4,
-        min_child_weight=6,
-        subsample=0.7,
-        verbosity=1,
-    )
+    print("FINISH - SKLEARN")
+
     step_train = TrainingStep(
         name="TrainModel",
-        estimator=xgb_train,
+        estimator=ridge_train,
         inputs={
             "train": TrainingInput(
                 s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
                     "train"
                 ].S3Output.S3Uri,
                 content_type="text/csv",
-            ),
-            "validation": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
-                    "validation"
-                ].S3Output.S3Uri,
-                content_type="text/csv",
-            ),
-        },
+            )
+        }
     )
+
+    # # training step for generating model artifacts
+    # model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Train"
+    # image_uri = sagemaker.image_uris.retrieve(
+    #     framework="xgboost",
+    #     region=region,
+    #     version="1.2-1",
+    #     py_version="py3",
+    #     instance_type=training_instance_type,
+    # )
+    # xgb_train = Estimator(
+    #     image_uri=image_uri,
+    #     instance_type=training_instance_type,
+    #     instance_count=1,
+    #     output_path=model_path,
+    #     base_job_name=f"{base_job_prefix}/train",
+    #     sagemaker_session=sagemaker_session,
+    #     role=role,
+    # )
+    # xgb_train.set_hyperparameters(
+    #     objective="reg:linear",
+    #     num_round=50,
+    #     max_depth=5,
+    #     eta=0.2,
+    #     gamma=4,
+    #     min_child_weight=6,
+    #     subsample=0.7,
+    #     verbosity=1,
+    # )
+    # step_train = TrainingStep(
+    #     name="TrainModel",
+    #     estimator=xgb_train,
+    #     inputs={
+    #         "train": TrainingInput(
+    #             s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
+    #                 "train"
+    #             ].S3Output.S3Uri,
+    #             content_type="text/csv",
+    #         ),
+    #         "validation": TrainingInput(
+    #             s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
+    #                 "validation"
+    #             ].S3Output.S3Uri,
+    #             content_type="text/csv",
+    #         ),
+    #     },
+    # )
     print("FINISH - TRAINING")
 
     # processing step for evaluation
@@ -236,17 +235,17 @@ def get_pipeline(
     # )
 
     # processing step for evaluation
-    script_eval = ScriptProcessor(
-        image_uri=image_uri,
-        command=["python3"],
-        instance_type=processing_instance_type,
-        instance_count=1,
-        base_job_name=f"{base_job_prefix}/script-eval",
-        sagemaker_session=sagemaker_session,
-        role=role,
-    )
+    # script_eval = ScriptProcessor(
+    #     image_uri=image_uri,
+    #     command=["python3"],
+    #     instance_type=processing_instance_type,
+    #     instance_count=1,
+    #     base_job_name=f"{base_job_prefix}/script-eval",
+    #     sagemaker_session=sagemaker_session,
+    #     role=role,
+    # )
 
-    print("FINISH - EVAL")
+    # print("FINISH - EVAL")
 
     evaluation_report = PropertyFile(
         name="EvaluationReport",
@@ -258,7 +257,7 @@ def get_pipeline(
 
     step_eval = ProcessingStep(
         name="EvaluateModel",
-        processor=script_eval,
+        processor=sklearn_processor,
         inputs=[
             ProcessingInput(
                 source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
