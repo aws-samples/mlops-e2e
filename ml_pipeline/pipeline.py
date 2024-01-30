@@ -38,6 +38,7 @@ from sagemaker.inputs import TrainingInput
 from sagemaker.processing import (
     ProcessingInput,
     ProcessingOutput,
+    ScriptProcessor
 )
 from sagemaker.sklearn import SKLearnModel
 from sagemaker.sklearn.processing import SKLearnProcessor
@@ -53,6 +54,7 @@ from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
     TrainingStep
+
 )
 from sagemaker.pipeline import PipelineModel
 from sagemaker.workflow.step_collections import RegisterModel
@@ -113,9 +115,9 @@ def get_pipeline(
 
     # parameters for pipeline execution
     # processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
-    # processing_instance_type = ParameterString(
-    #     name="ProcessingInstanceType", default_value="ml.t3.large"
-    # )
+    processing_instance_type = ParameterString(
+        name="ProcessingInstanceType", default_value="ml.t3.large"
+    )
     training_instance_type = ParameterString(
         name="TrainingInstanceType", default_value="ml.t3.large"
     )
@@ -226,11 +228,22 @@ def get_pipeline(
     print("FINISH - TRAINING")
 
     # processing step for evaluation
-    sklearn_processor = SKLearnProcessor(
-        framework_version=FRAMEWORK_VERSION,
+    # sklearn_processor = SKLearnProcessor(
+    #     framework_version=FRAMEWORK_VERSION,
+    #     role=role,
+    #     instance_type="ml.t3.large",
+    #     instance_count=1
+    # )
+
+    # processing step for evaluation
+    script_eval = ScriptProcessor(
+        image_uri=image_uri,
+        command=["python3"],
+        instance_type=processing_instance_type,
+        instance_count=1,
+        base_job_name=f"{base_job_prefix}/script-eval",
+        sagemaker_session=sagemaker_session,
         role=role,
-        instance_type="ml.t3.large",
-        instance_count=1
     )
 
     print("FINISH - EVAL")
@@ -245,7 +258,7 @@ def get_pipeline(
 
     step_eval = ProcessingStep(
         name="EvaluateModel",
-        processor=sklearn_processor,
+        processor=script_eval,
         inputs=[
             ProcessingInput(
                 source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
