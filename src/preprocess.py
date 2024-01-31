@@ -45,11 +45,12 @@ label_column = ['count_of_trx_1_day_ahead', 'count_of_trx_2_day_ahead', 'count_o
                 'count_of_trx_13_day_ahead', 'count_of_trx_14_day_ahead']
 
 feature_columns_dtype = {
-    "Date": np.datetime64,
     "location_id": np.int64,
     "location_parking_type_id": np.int64,
     "count_of_trx": np.int64
 }
+
+parse_dates = ['Date']
 
 label_column_dtype = {'count_of_trx_1_day_ahead': np.int64, 'count_of_trx_2_day_ahead': np.int64,
                       'count_of_trx_3_day_ahead': np.int64, 'count_of_trx_4_day_ahead': np.int64,
@@ -191,10 +192,10 @@ class DataBuilder:
         df = pd.read_csv(
             fn,
             usecols=feature_columns_names,
-            header=None,
-            names=feature_columns_names,
+            # header=None,
+            # names=feature_columns_names,
             dtype=feature_columns_dtype,
-            parse_dates=['Date']
+            parse_dates=parse_dates
         )
         os.unlink(fn)
         return df
