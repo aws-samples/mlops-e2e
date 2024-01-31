@@ -31,23 +31,15 @@ import sagemaker.session
 from sagemaker.transformer import Transformer
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
-from sagemaker.model_metrics import (
-    MetricsSource,
-    ModelMetrics
-)
+
 from sagemaker.processing import (
     ProcessingInput,
     ProcessingOutput
 )
 
-from sagemaker.sklearn import SKLearnModel
+
 from sagemaker.sklearn.processing import SKLearnProcessor
-from sagemaker.workflow.functions import Join
-from sagemaker.workflow.conditions import ConditionLessThanOrEqualTo
-from sagemaker.workflow.condition_step import (
-    ConditionStep,
-    JsonGet,
-)
+
 from sagemaker.workflow.parameters import (
     ParameterInteger,
     ParameterString
@@ -59,12 +51,8 @@ from sagemaker.workflow.steps import (
     TrainingStep, TransformStep
 
 )
-from sagemaker.pipeline import PipelineModel
-from sagemaker.workflow.step_collections import RegisterModel
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-
-from sagemaker.model import Model
 
 
 def get_session(region, default_bucket):
@@ -94,7 +82,6 @@ def get_pipeline(
         region,
         role=None,
         default_bucket=None,
-        model_package_group_name="AbaloneModelPackageGroup",
         pipeline_name="AbalonePipeline",
         base_job_prefix="Abalone",
 ):
@@ -211,44 +198,10 @@ def get_pipeline(
     )
     print("FINISH - EV step")
 
-    # register model step that will be conditionally executed
-    model_metrics = ModelMetrics(
-        model_statistics=MetricsSource(
-            s3_uri="{}/evaluation.json".format(
-                step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
-            ),
-            content_type="application/json",
-        )
-    )
-
-    print("FINISH - METRICS")
-
-    sklearn_model = SKLearnModel(
-        name='SKLearnTransform',
-        entry_point=os.path.join(BASE_DIR, "..", "src", "transform.py"),
-        role=role,
-        framework_version="1.2-1",
-        py_version="py3",
-        sagemaker_session=sagemaker_session,
-        model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
-                                            "model"].S3Output.S3Uri, "model.tar.gz"]), )
-
-    print("FINISH - Processing SK MODEL")
-
-    inference_model = Model(
-        image_uri=sagemaker.image_uris.retrieve(
-            framework='sklearn',
-            region=region,
-            version=FRAMEWORK_VERSION,
-            py_version='py3',
-            instance_type=training_instance_type
-        ),
-        model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts
-    )
 
     # Create a Transformer object
     transformer = Transformer(
-        model_name=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+        model_name=ridge_train.model_data,
         instance_count=1,
         instance_type='ml.m5.large',
         output_path=f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Transform",
@@ -262,51 +215,8 @@ def get_pipeline(
         inputs=sagemaker.inputs.TransformInput(data="s3://rl-batch-transform-dataset/data.csv")
     )
 
-    model = PipelineModel(
-        name='PipelineModel',
-        role=role,
-        models=[
-            sklearn_model,
-            inference_model
-        ]
-    )
-
     print("FINISH - MODEL")
 
-    step_register_inference_model = RegisterModel(
-        name="RegisterModel",
-        estimator=ridge_train,
-        content_types=["text/csv"],
-        response_types=["text/csv"],
-        transform_instances=["ml.m5.large"],
-        model_package_group_name=model_package_group_name,
-        approval_status=model_approval_status,
-        model_metrics=model_metrics,
-        model=model
-    )
-
-    print("FINISH - REGISTER")
-
-    # condition step for evaluating model quality and branching execution
-    cond_lte = ConditionLessThanOrEqualTo(
-        left=JsonGet(
-            step=step_eval,
-            property_file=evaluation_report,
-            json_path="regression_metrics.mse.value",
-        ),
-        right=70,
-    )
-
-    print("FINISH - COND1")
-
-    step_cond = ConditionStep(
-        name="CheckMSEEvaluation",
-        conditions=[cond_lte],
-        if_steps=[step_register_inference_model],
-        else_steps=[],
-    )
-
-    print("FINISH - COND STEP")
 
     # pipeline instance
     pipeline = Pipeline(
@@ -317,7 +227,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train,step_transform, step_eval, step_cond],
+        steps=[step_process, step_train, step_transform, step_eval],
         sagemaker_session=sagemaker_session,
     )
 
