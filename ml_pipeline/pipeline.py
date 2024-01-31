@@ -265,7 +265,7 @@ def get_pipeline(
             property_file=evaluation_report,
             json_path="regression_metrics.mse.value",
         ),
-        right=6.0,
+        right=70,
     )
 
     print("FINISH - COND1")
