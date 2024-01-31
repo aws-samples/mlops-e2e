@@ -31,18 +31,15 @@ import sagemaker.session
 
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
-# from sagemaker.model_metrics import (
-#     MetricsSource,
-#     ModelMetrics,
-# )from sagemaker.model_metrics import (
-#     MetricsSource,
-#     ModelMetrics,
-# )
+from sagemaker.model_metrics import (
+    MetricsSource,
+    ModelMetrics
+)
 from sagemaker.processing import (
     ProcessingInput,
     ProcessingOutput
-# ,    ScriptProcessor
 )
+
 from sagemaker.sklearn import SKLearnModel
 from sagemaker.sklearn.processing import SKLearnProcessor
 from sagemaker.workflow.functions import Join
@@ -51,7 +48,10 @@ from sagemaker.workflow.condition_step import (
     ConditionStep,
     JsonGet,
 )
-
+from sagemaker.workflow.parameters import (
+    ParameterInteger,
+    ParameterString
+)
 from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
@@ -64,11 +64,6 @@ from sagemaker.workflow.step_collections import RegisterModel
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
-
-# from sagemaker.workflow.parameters import (
-#     ParameterInteger,
-#     ParameterString
-# )
 
 def get_session(region, default_bucket):
     """Gets the sagemaker session based on the region.
@@ -116,22 +111,22 @@ def get_pipeline(
         role = sagemaker.session.get_execution_role(sagemaker_session)
 
     # parameters for pipeline execution
-    # processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
-    # processing_instance_type = ParameterString(
-    #     name="ProcessingInstanceType", default_value="ml.t3.large"
-    # )
-    # training_instance_type = ParameterString(
-    #     name="TrainingInstanceType", default_value="ml.t3.large"
-    # )
-    # model_approval_status = ParameterString(
-    #     name="ModelApprovalStatus", default_value="Approved"
-    # )
+    processing_instance_count = ParameterInteger(name="ProcessingInstanceCount", default_value=1)
+    processing_instance_type = ParameterString(
+        name="ProcessingInstanceType", default_value="ml.m5.large"
+    )
+    training_instance_type = ParameterString(
+        name="TrainingInstanceType", default_value="ml.m5.large"
+    )
+    model_approval_status = ParameterString(
+        name="ModelApprovalStatus", default_value="Approved"
+    )
 
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
         framework_version="1.2-1",
-        instance_type="ml.m5.large",
-        instance_count=1,
+        instance_type=processing_instance_type,
+        instance_count=processing_instance_count,
         base_job_name=f"{base_job_prefix}/sklearn-preprocess",
         sagemaker_session=sagemaker_session,
         role=role,
@@ -160,7 +155,7 @@ def get_pipeline(
     ridge_train = SKLearn(
         entry_point=script_path,
         framework_version=FRAMEWORK_VERSION,
-        instance_type="ml.m5.large",
+        instance_type=training_instance_type,
         output_path=model_path,
         sagemaker_session=sagemaker_session,
         role=role,
@@ -181,74 +176,7 @@ def get_pipeline(
         }
     )
 
-    # # training step for generating model artifacts
-    # model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Train"
-    # image_uri = sagemaker.image_uris.retrieve(
-    #     framework="xgboost",
-    #     region=region,
-    #     version="1.2-1",
-    #     py_version="py3",
-    #     instance_type=training_instance_type,
-    # )
-    # xgb_train = Estimator(
-    #     image_uri=image_uri,
-    #     instance_type=training_instance_type,
-    #     instance_count=1,
-    #     output_path=model_path,
-    #     base_job_name=f"{base_job_prefix}/train",
-    #     sagemaker_session=sagemaker_session,
-    #     role=role,
-    # )
-    # xgb_train.set_hyperparameters(
-    #     objective="reg:linear",
-    #     num_round=50,
-    #     max_depth=5,
-    #     eta=0.2,
-    #     gamma=4,
-    #     min_child_weight=6,
-    #     subsample=0.7,
-    #     verbosity=1,
-    # )
-    # step_train = TrainingStep(
-    #     name="TrainModel",
-    #     estimator=xgb_train,
-    #     inputs={
-    #         "train": TrainingInput(
-    #             s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
-    #                 "train"
-    #             ].S3Output.S3Uri,
-    #             content_type="text/csv",
-    #         ),
-    #         "validation": TrainingInput(
-    #             s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
-    #                 "validation"
-    #             ].S3Output.S3Uri,
-    #             content_type="text/csv",
-    #         ),
-    #     },
-    # )
     print("FINISH - TRAINING")
-
-    # processing step for evaluation
-    # sklearn_processor = SKLearnProcessor(
-    #     framework_version=FRAMEWORK_VERSION,
-    #     role=role,
-    #     instance_type="ml.t3.large",
-    #     instance_count=1
-    # )
-
-    # processing step for evaluation
-    # script_eval = ScriptProcessor(
-    #     image_uri=image_uri,
-    #     command=["python3"],
-    #     instance_type=processing_instance_type,
-    #     instance_count=1,
-    #     base_job_name=f"{base_job_prefix}/script-eval",
-    #     sagemaker_session=sagemaker_session,
-    #     role=role,
-    # )
-
-    # print("FINISH - EVAL")
 
     evaluation_report = PropertyFile(
         name="EvaluationReport",
@@ -281,18 +209,17 @@ def get_pipeline(
     )
     print("FINISH - EV step")
 
-    #
-    # # register model step that will be conditionally executed
-    # model_metrics = ModelMetrics(
-    #     model_statistics=MetricsSource(
-    #         s3_uri="{}/evaluation.json".format(
-    #             step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
-    #         ),
-    #         content_type="application/json",
-    #     )
-    # )
-    #
-    # print("FINISH - METRICS")
+    # register model step that will be conditionally executed
+    model_metrics = ModelMetrics(
+        model_statistics=MetricsSource(
+            s3_uri="{}/evaluation.json".format(
+                step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
+            ),
+            content_type="application/json",
+        )
+    )
+
+    print("FINISH - METRICS")
 
     sklearn_model = SKLearnModel(
         name='SKLearnTransform',
@@ -302,10 +229,10 @@ def get_pipeline(
         py_version="py3",
         sagemaker_session=sagemaker_session,
         model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
-                                            "model"
-                                        ].S3Output.S3Uri, "model.tar.gz"]),
-    )
+                                            "model"].S3Output.S3Uri, "model.tar.gz"]),)
     print("FINISH - SK MODEL")
+
+
 
     model = PipelineModel(
         name='PipelineModel',
@@ -320,13 +247,12 @@ def get_pipeline(
     step_register_inference_model = RegisterModel(
         name="RegisterModel",
         estimator=ridge_train,
-        # estimator=xgb_train,
         content_types=["text/csv"],
         response_types=["text/csv"],
         transform_instances=["ml.m5.large"],
         model_package_group_name=model_package_group_name,
-        approval_status="Approved",
-        # model_metrics=model_metrics,
+        approval_status=model_approval_status,
+        model_metrics=model_metrics,
         model=model
     )
 
@@ -356,6 +282,12 @@ def get_pipeline(
     # pipeline instance
     pipeline = Pipeline(
         name=pipeline_name,
+        parameters=[
+            processing_instance_type,
+            processing_instance_count,
+            training_instance_type,
+            model_approval_status
+        ],
         steps=[step_process, step_train, step_eval, step_cond],
         sagemaker_session=sagemaker_session,
     )
