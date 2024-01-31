@@ -73,7 +73,7 @@ if __name__ == "__main__":
     std = np.std(y_test - predictions)
     report_dict = {
         "regression_metrics": {
-            "mse": {"value": mse, "standard_deviation": std},
+            "mse": {"value": mse, "standard_deviation": std.mean()},
         },
     }
 
@@ -81,7 +81,7 @@ if __name__ == "__main__":
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     logger.info("Writing out evaluation report with mse: %f", mse)
-    print(f"Writing out evaluation report with mse: {mse}")
+
     evaluation_path = f"{output_dir}/evaluation.json"
     with open(evaluation_path, "w") as f:
         f.write(json.dumps(report_dict))
