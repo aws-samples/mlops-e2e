@@ -64,6 +64,8 @@ from sagemaker.workflow.step_collections import RegisterModel
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
+from sagemaker.model import Model
+
 
 def get_session(region, default_bucket):
     """Gets the sagemaker session based on the region.
@@ -229,16 +231,27 @@ def get_pipeline(
         py_version="py3",
         sagemaker_session=sagemaker_session,
         model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
-                                            "model"].S3Output.S3Uri, "model.tar.gz"]),)
-    print("FINISH - SK MODEL")
+                                            "model"].S3Output.S3Uri, "model.tar.gz"]), )
 
+    print("FINISH - Processing SK MODEL")
 
+    inference_model = Model(
+        image_uri=sagemaker.image_uris.retrieve(
+            framework='sklearn',
+            region=region,
+            version=FRAMEWORK_VERSION,
+            py_version='py3',
+            instance_type=training_instance_type
+        ),
+        model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts
+    )
 
     model = PipelineModel(
         name='PipelineModel',
         role=role,
         models=[
-            sklearn_model
+            sklearn_model,
+            inference_model
         ]
     )
 
