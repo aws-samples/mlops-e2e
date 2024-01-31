@@ -74,6 +74,7 @@ def get_session(region, default_bucket):
         boto_session=boto_session,
         sagemaker_client=sagemaker_client,
         sagemaker_runtime_client=runtime_client,
+        model_package_group_name="AbaloneModelPackageGroup",
         default_bucket=default_bucket,
     )
 
