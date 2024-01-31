@@ -74,7 +74,6 @@ def get_session(region, default_bucket):
         boto_session=boto_session,
         sagemaker_client=sagemaker_client,
         sagemaker_runtime_client=runtime_client,
-        model_package_group_name="AbaloneModelPackageGroup",
         default_bucket=default_bucket,
     )
 
@@ -83,6 +82,7 @@ def get_pipeline(
         region,
         role=None,
         default_bucket=None,
+        model_package_group_name="AbaloneModelPackageGroup",
         pipeline_name="AbalonePipeline",
         base_job_prefix="Abalone",
 ):
