@@ -28,7 +28,7 @@ import os
 import boto3
 import sagemaker
 import sagemaker.session
-
+from sagemaker.transformer import Transformer
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
 from sagemaker.model_metrics import (
@@ -56,7 +56,7 @@ from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
-    TrainingStep
+    TrainingStep, TransformStep
 
 )
 from sagemaker.pipeline import PipelineModel
@@ -246,6 +246,22 @@ def get_pipeline(
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts
     )
 
+    # Create a Transformer object
+    transformer = Transformer(
+        model_name=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+        instance_count=1,
+        instance_type='ml.m5.large',
+        output_path=f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Transform",
+        sagemaker_session=sagemaker_session
+    )
+
+    # Define the TransformStep
+    step_transform = TransformStep(
+        name="BatchTransform",
+        transformer=transformer,
+        inputs=sagemaker.inputs.TransformInput(data="s3://rl-batch-transform-dataset/data.csv")
+    )
+
     model = PipelineModel(
         name='PipelineModel',
         role=role,
@@ -301,7 +317,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train, step_eval, step_cond],
+        steps=[step_process, step_train,step_transform, step_eval, step_cond],
         sagemaker_session=sagemaker_session,
     )
 
