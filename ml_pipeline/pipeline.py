@@ -239,8 +239,15 @@ def get_pipeline(
     # Define the batch transform step
 
     # Define the model
+    image_uri = sagemaker.image_uris.retrieve(
+        framework="xgboost",
+        region=region,
+        version="1.0-1",
+        py_version="py3",
+        instance_type="ml.m5.large",
+    )
     model = sagemaker.model.Model(
-        image_uri=ridge_train,
+        image_uri=image_uri,
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=sagemaker_session,
         role=role
