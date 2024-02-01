@@ -240,7 +240,7 @@ def get_pipeline(
 
     # Define the model
     model = sagemaker.model.Model(
-        image_uri=sklearn_processor,
+        image_uri=ridge_train,
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=sagemaker_session,
         role=role
