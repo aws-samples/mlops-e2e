@@ -32,7 +32,7 @@ import sagemaker.session
 #     MetricsSource,
 #     ModelMetrics
 # )
-# from sagemaker.transformer import Transformer
+from sagemaker.transformer import Transformer
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
 
@@ -44,7 +44,7 @@ from sagemaker.processing import (
 from sagemaker.sklearn.processing import SKLearnProcessor
 # from sagemaker.sklearn import SKLearnModel
 # from sagemaker.workflow.functions import Join
-# # from sagemaker.workflow.model_step import ModelStep
+from sagemaker.workflow.model_step import ModelStep
 
 from sagemaker.workflow.parameters import (
     ParameterInteger,
@@ -247,20 +247,14 @@ def get_pipeline(
     )
     print("Define the model-Done")
 
-    inputs = sagemaker.inputs.CreateModelInput(
-        instance_type="ml.m5.large",
-        accelerator_type="ml.eia1.medium",
-    )
-    print("Define the model inputs -Done")
     # Model Step
-    step_create_model = sagemaker.workflow.model_step.CreateModelStep(
+    step_create_model = ModelStep(
         name="ModelCreationStep",
-        model=model,
-        inputs=inputs
+        step_args=model.create(instance_type="ml.m5.large"),
     )
     print("step_create_model-Done")
 
-    transformer = sagemaker.transformer.Transformer(
+    transformer = Transformer(
         model_name=step_create_model.properties.ModelName,
         instance_type="ml.m5.large",
         instance_count=1,
