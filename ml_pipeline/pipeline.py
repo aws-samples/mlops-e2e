@@ -250,7 +250,7 @@ def get_pipeline(
     # Model Step
     step_create_model = ModelStep(
         name="ModelCreationStep",
-        step_args=model.register()
+        step_args=model.create()
     )
     print("step_create_model-Done")
 
