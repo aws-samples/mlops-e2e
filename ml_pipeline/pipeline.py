@@ -122,6 +122,11 @@ def get_pipeline(
         name="ModelApprovalStatus", default_value="Approved"
     )
 
+    batch_data = ParameterString(
+        name="BatchData",
+        default_value="s3://rl-batch-transform-dataset/data.csv",
+    )
+
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
         framework_version="1.2-1",
@@ -231,24 +236,39 @@ def get_pipeline(
     #                                         "model"].S3Output.S3Uri, "model.tar.gz"]), )
     # print("FINISH - SK MODEL")
 
+    # Define the batch transform step
+
     # Define the model
     model = sagemaker.model.Model(
-        image_uri=step_train.properties.AlgorithmSpecification.TrainingImage,
+        image_uri=sklearn_processor,
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=sagemaker_session,
         role=role
     )
+    print("Define the model-Done")
+
+    # Model Step
+    step_create_model = sagemaker.workflow.model_step.ModelStep(
+        name="ModelCreationStep",
+        step_args=model.create(instance_type="ml.m5.large"),
+    )
+    print("step_create_model-Done")
+
+    transformer = sagemaker.transformer.Transformer(
+        model_name=step_create_model.properties.ModelName,
+        instance_type="ml.m5.large",
+        instance_count=1,
+        output_path=f"s3://{default_bucket}/Transform"
+    )
+    print("Define the transformer-Done")
 
     # Define the batch transform step
     step_transform = TransformStep(
         name="BatchTransform",
-        transformer=model.transformer(
-            instance_count=1,
-            instance_type='ml.m5.large',
-            output_path='s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/batch-transform-output'
-        ),
-        inputs=sagemaker.inputs.TransformInput(data='s3://rl-batch-transform-dataset/')
+        transformer=transformer,
+        inputs=sagemaker.inputs.TransformInput(data=batch_data)
     )
+    print("Define the step_transform-Done")
 
     # step_create_model = ModelStep(
     #     name="AbaloneCreateModel",
@@ -323,7 +343,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train, step_transform, step_eval],
+        steps=[step_process, step_train, step_eval, step_transform],
         sagemaker_session=sagemaker_session,
     )
 
