@@ -28,7 +28,11 @@ import os
 import boto3
 import sagemaker
 import sagemaker.session
-from sagemaker.transformer import Transformer
+# from sagemaker.model_metrics import (
+#     MetricsSource,
+#     ModelMetrics
+# )
+# from sagemaker.transformer import Transformer
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
 
@@ -38,9 +42,9 @@ from sagemaker.processing import (
 )
 
 from sagemaker.sklearn.processing import SKLearnProcessor
-from sagemaker.sklearn import SKLearnModel
+# from sagemaker.sklearn import SKLearnModel
 # from sagemaker.workflow.functions import Join
-from sagemaker.workflow.model_step import ModelStep
+# # from sagemaker.workflow.model_step import ModelStep
 
 from sagemaker.workflow.parameters import (
     ParameterInteger,
@@ -50,9 +54,13 @@ from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
-    TrainingStep, TransformStep
+    TrainingStep,
+    TransformStep
 
 )
+
+# from sagemaker.pipeline import PipelineModel
+# from sagemaker.workflow.step_collections import RegisterModel
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -201,39 +209,110 @@ def get_pipeline(
     )
     print("FINISH - EV step")
 
-    sklearn_model = SKLearnModel(
-        name='SKLearnTransform',
-        entry_point=os.path.join(BASE_DIR, "..", "src", "transform.py"),
-        role=role,
-        framework_version="1.2-1",
-        py_version="py3",
-        sagemaker_session=sagemaker_session,
+    # # register model step that will be conditionally executed
+    # model_metrics = ModelMetrics(
+    #     model_statistics=MetricsSource(
+    #         s3_uri="{}/evaluation.json".format(
+    #             step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
+    #         ),
+    #         content_type="application/json",
+    #     )
+    # )
+    # print("FINISH - METRICS")
+
+    # sklearn_model = SKLearnModel(
+    #     name='SKLearnTransform',
+    #     entry_point=os.path.join(BASE_DIR, "..", "src", "transform.py"),
+    #     role=role,
+    #     framework_version="1.2-1",
+    #     py_version="py3",
+    #     sagemaker_session=sagemaker_session,
+    #     model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
+    #                                         "model"].S3Output.S3Uri, "model.tar.gz"]), )
+    # print("FINISH - SK MODEL")
+
+    # Define the model
+    model = sagemaker.model.Model(
+        image_uri=step_train.properties.AlgorithmSpecification.TrainingImage,
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+        sagemaker_session=sagemaker_session,
+        role=role
     )
 
-
-    step_create_model = ModelStep(
-        name="AbaloneCreateModel",
-        step_args=sklearn_model.create(instance_type="ml.m5.large"),
-    )
-
-    # Create a Transformer object
-    transformer = Transformer(
-        model_name=step_create_model.properties.ModelName,
-        instance_count=1,
-        instance_type='ml.m5.large',
-        output_path=f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Transform",
-        sagemaker_session=sagemaker_session
-    )
-
-    # Define the TransformStep
+    # Define the batch transform step
     step_transform = TransformStep(
         name="BatchTransform",
-        transformer=transformer,
-        inputs=sagemaker.inputs.TransformInput(data="s3://rl-batch-transform-dataset/data.csv")
+        transformer=model.transformer(
+            instance_count=1,
+            instance_type='ml.m5.large',
+            output_path='s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/batch-transform-output'
+        ),
+        inputs=sagemaker.inputs.TransformInput(data='s3://rl-batch-transform-dataset/')
     )
 
-    print("FINISH - MODEL")
+    # step_create_model = ModelStep(
+    #     name="AbaloneCreateModel",
+    #     step_args=sklearn_model.create(instance_type="ml.m5.large"),
+    # )
+    #
+    # # Create a Transformer object
+    # transformer = Transformer(
+    #     model_name=step_create_model.properties.ModelName,
+    #     instance_count=1,
+    #     instance_type='ml.m5.large',
+    #     output_path=f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Transform",
+    #     sagemaker_session=sagemaker_session
+    # )
+    #
+    # # Define the TransformStep
+    # step_transform = TransformStep(
+    #     name="BatchTransform",
+    #     transformer=transformer,
+    #     inputs=sagemaker.inputs.TransformInput(data="s3://rl-batch-transform-dataset/data.csv")
+    # )
+    #
+
+    # model = PipelineModel(
+    #     name='PipelineModel',
+    #     role=role,
+    #     models=[
+    #         sklearn_model
+    #     ]
+    # )
+    # print("FINISH - MODEL")
+
+    # step_register_inference_model = RegisterModel(
+    #     name="RegisterModel",
+    #     estimator=ridge_train,
+    #     content_types=["text/csv"],
+    #     response_types=["text/csv"],
+    #     transform_instances=["ml.m5.large"],
+    #     model_package_group_name=model_package_group_name,
+    #     approval_status=model_approval_status,
+    #     model_metrics=model_metrics,
+    #     model=model
+    # )
+    # print("FINISH - REGISTER")
+
+    # condition step for evaluating model quality and branching execution
+    # cond_lte = ConditionLessThanOrEqualTo(
+    #     left=JsonGet(
+    #         step=step_eval,
+    #         property_file=evaluation_report,
+    #         json_path="regression_metrics.mse.value",
+    #     ),
+    #     right=70,
+    # )
+    #
+    # print("FINISH - COND1")
+    #
+    # step_cond = ConditionStep(
+    #     name="CheckMSEEvaluation",
+    #     conditions=[cond_lte],
+    #     if_steps=[step_register_inference_model],
+    #     else_steps=[],
+    # )
+    # print("FINISH - COND STEP")
 
     # pipeline instance
     pipeline = Pipeline(
