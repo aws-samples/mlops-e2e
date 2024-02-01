@@ -247,10 +247,16 @@ def get_pipeline(
     )
     print("Define the model-Done")
 
+    inputs = sagemaker.inputs.CreateModelInput(
+        instance_type="ml.m5.large",
+        accelerator_type="ml.eia1.medium",
+    )
+    print("Define the model inputs -Done")
     # Model Step
-    step_create_model = sagemaker.workflow.model_step.ModelStep(
+    step_create_model = sagemaker.workflow.model_step.CreateModelStep(
         name="ModelCreationStep",
-        step_args=model.create(instance_type="ml.m5.large"),
+        model=model,
+        inputs=inputs
     )
     print("step_create_model-Done")
 
