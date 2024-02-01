@@ -37,8 +37,10 @@ from sagemaker.processing import (
     ProcessingOutput
 )
 
-
 from sagemaker.sklearn.processing import SKLearnProcessor
+from sagemaker.sklearn import SKLearnModel
+from sagemaker.workflow.functions import Join
+from sagemaker.workflow.model_step import ModelStep
 
 from sagemaker.workflow.parameters import (
     ParameterInteger,
@@ -199,10 +201,27 @@ def get_pipeline(
     )
     print("FINISH - EV step")
 
+    sklearn_model = SKLearnModel(
+        name='SKLearnTransform',
+        entry_point=os.path.join(BASE_DIR, "..", "src", "transform.py"),
+        role=role,
+        framework_version="1.2-1",
+        py_version="py3",
+        sagemaker_session=sagemaker_session,
+        model_data=Join(on='/', values=[step_process.properties.ProcessingOutputConfig.Outputs[
+                    "model"
+                ].S3Output.S3Uri, "model.tar.gz"]),
+    )
+
+
+    step_create_model = ModelStep(
+        name="AbaloneCreateModel",
+        step_args=sklearn_model.create(instance_type="ml.m5.large"),
+    )
 
     # Create a Transformer object
     transformer = Transformer(
-        model_name=ridge_train.model_data,
+        model_name=step_create_model.properties.ModelName,
         instance_count=1,
         instance_type='ml.m5.large',
         output_path=f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Transform",
@@ -217,7 +236,6 @@ def get_pipeline(
     )
 
     print("FINISH - MODEL")
-
 
     # pipeline instance
     pipeline = Pipeline(
