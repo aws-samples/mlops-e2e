@@ -55,7 +55,7 @@ def input_fn(input_data, content_type):
         df = pd.read_csv(StringIO(input_data),
                          header=None)
 
-        if len(df.columns) == len(feature_columns_names) + 1:
+        if len(df.columns) == len(feature_columns_names) + 14:
             # This is a labelled example, includes the ring label
             df.columns = feature_columns_names + label_column
         elif len(df.columns) == len(feature_columns_names):
