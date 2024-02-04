@@ -40,6 +40,8 @@ from sagemaker.processing import (
     ProcessingInput,
     ProcessingOutput
 )
+from sagemaker.workflow.pipeline_context import PipelineSession
+from sagemaker.model import Model
 
 from sagemaker.sklearn.processing import SKLearnProcessor
 # from sagemaker.sklearn import SKLearnModel
@@ -239,17 +241,17 @@ def get_pipeline(
     # Define the batch transform step
 
     # Define the model
-    image_uri = sagemaker.image_uris.retrieve(
-        framework="xgboost",
-        region=region,
-        version="1.0-1",
-        py_version="py3",
-        instance_type="ml.m5.large",
-    )
-    model = sagemaker.model.Model(
-        image_uri=image_uri,
+    # image_uri = sagemaker.image_uris.retrieve(
+    #     framework="xgboost",
+    #     region=region,
+    #     version="1.0-1",
+    #     py_version="py3",
+    #     instance_type="ml.m5.large",
+    # )
+    model = Model(
+        image_uri=ridge_train.training_image_uri(),
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
-        sagemaker_session=sagemaker_session,
+        sagemaker_session=PipelineSession(),
         role=role
     )
     print("Define the model-Done")
