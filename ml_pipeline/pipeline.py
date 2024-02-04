@@ -249,21 +249,32 @@ def get_pipeline(
     #     instance_type="ml.m5.large",
     # )
 
-    # Retrieve the Scikit-learn image URI
+    # # Retrieve the Scikit-learn image URI
+    model_inference_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Inference"
+    inference_path = os.path.join(BASE_DIR, "..", "src", "inference.py")
     # sklearn_image_uri = sagemaker.image_uris.retrieve(
     #     framework='sklearn',
     #     region=region,
     #     version='1.2-1',  # specify your desired version
     #     py_version='py3',
-    #     instance_type='ml.m5.large'  # specify the instance type for inference
+    #     instance_type='ml.m5.large',  # specify the instance type for inference,
+    #     entry_point=inference_path,
+    #     output_path=model_inference_path
     # )
 
-    inference_path = os.path.join(BASE_DIR, "..", "src", "inference.py")
+    ridge_inference = SKLearn(
+        entry_point=inference_path,
+        framework_version=FRAMEWORK_VERSION,
+        instance_type=training_instance_type,
+        output_path=model_inference_path,
+        sagemaker_session=sagemaker_session,
+        role=role
+    )
+
     model = Model(
-        image_uri=ridge_train.training_image_uri(),
+        image_uri=ridge_inference.training_image_uri(),
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=PipelineSession(),
-        entry_point=inference_path,
         role=role
     )
     print("Define the model-Done")
@@ -274,7 +285,6 @@ def get_pipeline(
         step_args=model.create()
     )
     print("step_create_model-Done")
-
 
     transformer = Transformer(
         model_name=step_create_model.properties.ModelName,
