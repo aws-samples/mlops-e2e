@@ -258,11 +258,12 @@ def get_pipeline(
         instance_type='ml.m5.large'  # specify the instance type for inference
     )
 
-
+    inference_path = os.path.join(BASE_DIR, "..", "src", "train.py")
     model = Model(
         image_uri=sklearn_image_uri,
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=PipelineSession(),
+        entry_point=inference_path,
         role=role
     )
     print("Define the model-Done")
