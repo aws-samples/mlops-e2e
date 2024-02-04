@@ -260,7 +260,7 @@ def get_pipeline(
 
 
     model = Model(
-        image_uri=sklearn_image_uri.training_image_uri(),
+        image_uri=sklearn_image_uri,
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=PipelineSession(),
         role=role
