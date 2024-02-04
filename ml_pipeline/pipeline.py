@@ -248,8 +248,19 @@ def get_pipeline(
     #     py_version="py3",
     #     instance_type="ml.m5.large",
     # )
+
+    # Retrieve the Scikit-learn image URI
+    sklearn_image_uri = sagemaker.image_uris.retrieve(
+        framework='sklearn',
+        region=region,
+        version='1.2-1',  # specify your desired version
+        py_version='py3',
+        instance_type='ml.m5.large'  # specify the instance type for inference
+    )
+
+
     model = Model(
-        image_uri=ridge_train.training_image_uri(),
+        image_uri=sklearn_image_uri.training_image_uri(),
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=PipelineSession(),
         role=role
@@ -262,6 +273,7 @@ def get_pipeline(
         step_args=model.create()
     )
     print("step_create_model-Done")
+
 
     transformer = Transformer(
         model_name=step_create_model.properties.ModelName,
