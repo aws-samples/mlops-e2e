@@ -250,17 +250,17 @@ def get_pipeline(
     # )
 
     # Retrieve the Scikit-learn image URI
-    sklearn_image_uri = sagemaker.image_uris.retrieve(
-        framework='sklearn',
-        region=region,
-        version='1.2-1',  # specify your desired version
-        py_version='py3',
-        instance_type='ml.m5.large'  # specify the instance type for inference
-    )
+    # sklearn_image_uri = sagemaker.image_uris.retrieve(
+    #     framework='sklearn',
+    #     region=region,
+    #     version='1.2-1',  # specify your desired version
+    #     py_version='py3',
+    #     instance_type='ml.m5.large'  # specify the instance type for inference
+    # )
 
     inference_path = os.path.join(BASE_DIR, "..", "src", "inference.py")
     model = Model(
-        image_uri=sklearn_image_uri,
+        image_uri=ridge_train.training_image_uri(),
         model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         sagemaker_session=PipelineSession(),
         entry_point=inference_path,
