@@ -124,10 +124,10 @@ def get_pipeline(
         name="ModelApprovalStatus", default_value="Approved"
     )
 
-    batch_data = ParameterString(
-        name="BatchData",
-        default_value="s3://rl-batch-transform-dataset/data.csv",
-    )
+    # batch_data = ParameterString(
+    #     name="BatchData",
+    #     default_value="s3://rl-batch-transform-dataset/data.csv",
+    # )
 
     # processing step for feature engineering
     sklearn_processor = SKLearnProcessor(
@@ -275,7 +275,7 @@ def get_pipeline(
     step_transform = TransformStep(
         name="BatchTransform",
         transformer=transformer,
-        inputs=sagemaker.inputs.TransformInput(data=batch_data)
+        inputs=transformer.transform(data="s3://rl-batch-transform-dataset/data.csv")
     )
     print("Define the step_transform-Done")
 
