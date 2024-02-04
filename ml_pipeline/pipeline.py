@@ -267,15 +267,15 @@ def get_pipeline(
         model_name=step_create_model.properties.ModelName,
         instance_type="ml.m5.large",
         instance_count=1,
-        output_path=f"s3://{default_bucket}/Transform"
+        output_path=f"s3://{default_bucket}/Transform",
+        sagemaker_session=PipelineSession()
     )
     print("Define the transformer-Done")
 
     # Define the batch transform step
     step_transform = TransformStep(
         name="BatchTransform",
-        transformer=transformer,
-        inputs=transformer.transform(data="s3://rl-batch-transform-dataset/data.csv")
+        step_args=transformer.transform(data="s3://rl-batch-transform-dataset/data.csv")
     )
     print("Define the step_transform-Done")
 
