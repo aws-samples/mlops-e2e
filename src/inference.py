@@ -43,7 +43,7 @@ if __name__ == "__main__":
     data_to_predict = pd.read_csv(data_to_predict_path, header=None)
 
     logger.info("Performing predictions against data.")
-    predictions = model.predict(data_to_predict)
+    predictions = model.predict(data_to_predict.iloc[:, 1:])
 
     output_dir = "/opt/ml/processing/predictions"
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
