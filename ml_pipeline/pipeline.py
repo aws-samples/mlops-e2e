@@ -53,7 +53,7 @@ from sagemaker.workflow.parameters import (
     ParameterString
 )
 from sagemaker.workflow.pipeline import Pipeline
-from sagemaker.workflow.properties import PropertyFile
+# from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
     TrainingStep
