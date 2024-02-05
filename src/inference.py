@@ -45,7 +45,7 @@ if __name__ == "__main__":
     logger.info("Performing predictions against data.")
     predictions = model.predict(data_to_predict)
 
-    output_dir = "/opt/ml/processing/transform"
+    output_dir = "/opt/ml/processing/predictions"
     pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
 
     logger.info("Writing out predictions")

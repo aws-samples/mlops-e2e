@@ -233,7 +233,7 @@ def get_pipeline(
             ),
         ],
         outputs=[
-            ProcessingOutput(output_name="predictions", source="/opt/ml/processing/transform"),
+            ProcessingOutput(output_name="predictions", source="/opt/ml/processing/predictions"),
         ],
         code=os.path.join(BASE_DIR, "..", "src", "inference.py")
     )
