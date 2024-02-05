@@ -186,36 +186,36 @@ def get_pipeline(
 
     print("FINISH - TRAINING")
 
-    evaluation_report = PropertyFile(
-        name="EvaluationReport",
-        output_name="evaluation",
-        path="evaluation.json",
-    )
-
-    print("FINISH - EV-REPORT")
-
-    step_eval = ProcessingStep(
-        name="EvaluateModel",
-        processor=sklearn_processor,
-        inputs=[
-            ProcessingInput(
-                source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
-                destination="/opt/ml/processing/model",
-            ),
-            ProcessingInput(
-                source=step_process.properties.ProcessingOutputConfig.Outputs[
-                    "test"
-                ].S3Output.S3Uri,
-                destination="/opt/ml/processing/test",
-            ),
-        ],
-        outputs=[
-            ProcessingOutput(output_name="evaluation", source="/opt/ml/processing/evaluation"),
-        ],
-        code=os.path.join(BASE_DIR, "..", "src", "evaluate.py"),
-        property_files=[evaluation_report],
-    )
-    print("FINISH - EV step")
+    # evaluation_report = PropertyFile(
+    #     name="EvaluationReport",
+    #     output_name="evaluation",
+    #     path="evaluation.json",
+    # )
+    #
+    # print("FINISH - EV-REPORT")
+    #
+    # step_eval = ProcessingStep(
+    #     name="EvaluateModel",
+    #     processor=sklearn_processor,
+    #     inputs=[
+    #         ProcessingInput(
+    #             source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+    #             destination="/opt/ml/processing/model",
+    #         ),
+    #         ProcessingInput(
+    #             source=step_process.properties.ProcessingOutputConfig.Outputs[
+    #                 "test"
+    #             ].S3Output.S3Uri,
+    #             destination="/opt/ml/processing/test",
+    #         ),
+    #     ],
+    #     outputs=[
+    #         ProcessingOutput(output_name="evaluation", source="/opt/ml/processing/evaluation"),
+    #     ],
+    #     code=os.path.join(BASE_DIR, "..", "src", "evaluate.py"),
+    #     property_files=[evaluation_report],
+    # )
+    # print("FINISH - EV step")
 
     step_predict = ProcessingStep(
         name="Predictions",
@@ -237,7 +237,7 @@ def get_pipeline(
         ],
         code=os.path.join(BASE_DIR, "..", "src", "inference.py")
     )
-    print("FINISH - EV step")
+    print("FINISH - Predictions step")
 
     # # register model step that will be conditionally executed
     # model_metrics = ModelMetrics(
@@ -407,7 +407,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train, step_eval, step_predict],
+        steps=[step_process, step_train, step_predict],
         sagemaker_session=sagemaker_session,
     )
 
