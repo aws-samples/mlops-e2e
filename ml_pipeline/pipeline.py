@@ -32,7 +32,7 @@ import sagemaker.session
 #     MetricsSource,
 #     ModelMetrics
 # )
-from sagemaker.transformer import Transformer
+# from sagemaker.transformer import Transformer
 from sagemaker.sklearn.estimator import SKLearn
 from sagemaker.inputs import TrainingInput
 
@@ -40,13 +40,13 @@ from sagemaker.processing import (
     ProcessingInput,
     ProcessingOutput
 )
-from sagemaker.workflow.pipeline_context import PipelineSession
-from sagemaker.model import Model
+# from sagemaker.workflow.pipeline_context import PipelineSession
+# from sagemaker.model import Model
 
 from sagemaker.sklearn.processing import SKLearnProcessor
 # from sagemaker.sklearn import SKLearnModel
 # from sagemaker.workflow.functions import Join
-from sagemaker.workflow.model_step import ModelStep
+# from sagemaker.workflow.model_step import ModelStep
 
 from sagemaker.workflow.parameters import (
     ParameterInteger,
@@ -56,8 +56,8 @@ from sagemaker.workflow.pipeline import Pipeline
 from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
-    TrainingStep,
-    TransformStep
+    TrainingStep
+# ,TransformStep
 
 )
 

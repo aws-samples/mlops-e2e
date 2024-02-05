@@ -31,7 +31,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 import joblib
 import tarfile
 
-from datetime import timedelta
 
 feature_columns_names = [
     'Date',
