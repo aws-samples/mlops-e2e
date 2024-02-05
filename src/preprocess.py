@@ -31,6 +31,8 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 import joblib
 import tarfile
 
+from datetime import timedelta
+
 feature_columns_names = [
     'Date',
     'location_id',
@@ -71,6 +73,8 @@ class DataProcessor:
         self._logger.debug("Defining transformers.")
         # prepare the data for time series forecasting
         self._input_data = self.preprocess_data()
+        # prepare_train_and_prediction_data
+        self._input_data, self.data_to_predict = self.prepare_train_and_prediction_data()
         # specify numerical features
         numeric_features = ['count_of_trx_lag_1', 'count_of_trx_lag_7', 'count_of_trx_lag_14']
 
@@ -113,7 +117,12 @@ class DataProcessor:
         x_pre = self._preprocess.transform(self._input_data)
         y_pre = self._input_data_y.to_numpy()  # .reshape(len(self._input_data_y), 1)
 
-        return np.concatenate((x_location_features, x_pre, y_pre), axis=1)
+        data_to_predict_location_features = self.data_to_predict[["location_id"]].copy().to_numpy()
+        data_to_predict_pre = self._preprocess.transform(self.data_to_predict)
+
+        return (np.concatenate((x_location_features, x_pre, y_pre), axis=1),
+                np.concatenate((data_to_predict_location_features, data_to_predict_pre), axis=1))
+
 
     def merge_two_dicts(x, y):
         """Merges two dicts, returning a new copy."""
@@ -150,9 +159,22 @@ class DataProcessor:
         df.set_index('Date', inplace=True)
 
         # Drop Nans
-        df.dropna(inplace=True)
+        # df.dropna(inplace=True)
 
         return df
+
+    def prepare_train_and_prediction_data(self):
+        preprocessed_data = self._input_data.copy()
+        preprocessed_data["Date"] = self._input_data.index
+
+        train_data = preprocessed_data[~preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
+        prediction_data = preprocessed_data[preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
+
+        data_for_modeling = train_data.dropna().copy()
+
+        data_to_predict = prediction_data.drop(label_column, axis=1).dropna().copy()
+
+        return data_for_modeling, data_to_predict
 
 
 class DataBuilder:
@@ -311,7 +333,7 @@ def run_main():
 
     logger.debug("Preprocessing raw input data")
     data_processor = DataProcessor(df)
-    data_output = data_processor.process()
+    data_output, data_to_predict = data_processor.process()
 
     len_data_output = len(data_output)
     logger.info("Splitting %d rows of data into train, validation, test datasets.", len_data_output)
@@ -321,6 +343,7 @@ def run_main():
     logger.info("Writing out datasets to %s.", base_dir)
     pd.DataFrame(train).to_csv(f"{base_dir}/train/train.csv", header=False, index=False)
     pd.DataFrame(test).to_csv(f"{base_dir}/test/test.csv", header=False, index=False)
+    pd.DataFrame(data_to_predict).to_csv(f"{base_dir}/transform/data_to_predict.csv", header=False, index=False)
 
     logger.info("Saving the preprocessing model to %s", base_dir)
     data_processor.save_model(os.path.join(base_dir, "model"))

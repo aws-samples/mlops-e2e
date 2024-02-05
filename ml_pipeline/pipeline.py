@@ -146,6 +146,7 @@ def get_pipeline(
         outputs=[
             ProcessingOutput(output_name="train", source="/opt/ml/processing/train"),
             ProcessingOutput(output_name="test", source="/opt/ml/processing/test"),
+            ProcessingOutput(output_name="data_to_predict", source="/opt/ml/processing/transform"),
             ProcessingOutput(output_name="model", source="/opt/ml/processing/model"),
         ],
         code=os.path.join(BASE_DIR, "..", "src", "preprocess.py"),
@@ -216,6 +217,28 @@ def get_pipeline(
     )
     print("FINISH - EV step")
 
+    step_predict = ProcessingStep(
+        name="Predictions",
+        processor=sklearn_processor,
+        inputs=[
+            ProcessingInput(
+                source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+                destination="/opt/ml/processing/model",
+            ),
+            ProcessingInput(
+                source=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "data_to_predict"
+                ].S3Output.S3Uri,
+                destination="/opt/ml/processing/transform",
+            ),
+        ],
+        outputs=[
+            ProcessingOutput(output_name="predictions", source="/opt/ml/processing/transform"),
+        ],
+        code=os.path.join(BASE_DIR, "..", "src", "inference.py")
+    )
+    print("FINISH - EV step")
+
     # # register model step that will be conditionally executed
     # model_metrics = ModelMetrics(
     #     model_statistics=MetricsSource(
@@ -249,58 +272,67 @@ def get_pipeline(
     #     instance_type="ml.m5.large",
     # )
 
-    # # Retrieve the Scikit-learn image URI
-    model_inference_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Inference"
-    inference_path = os.path.join(BASE_DIR, "..", "src", "inference.py")
-    # sklearn_image_uri = sagemaker.image_uris.retrieve(
-    #     framework='sklearn',
-    #     region=region,
-    #     version='1.2-1',  # specify your desired version
-    #     py_version='py3',
-    #     instance_type='ml.m5.large',  # specify the instance type for inference,
+    # # # Retrieve the Scikit-learn image URI
+    # model_inference_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/Inference"
+    # inference_path = os.path.join(BASE_DIR, "..", "src", "inference.py")
+    # # sklearn_image_uri = sagemaker.image_uris.retrieve(
+    # #     framework='sklearn',
+    # #     region=region,
+    # #     version='1.2-1',  # specify your desired version
+    # #     py_version='py3',
+    # #     instance_type='ml.m5.large',  # specify the instance type for inference,
+    # #     entry_point=inference_path,
+    # #     output_path=model_inference_path
+    # # )
+    #
+    # ridge_inference = SKLearn(
     #     entry_point=inference_path,
-    #     output_path=model_inference_path
+    #     framework_version=FRAMEWORK_VERSION,
+    #     instance_type=training_instance_type,
+    #     output_path=model_inference_path,
+    #     sagemaker_session=sagemaker_session,
+    #     role=role
     # )
-
-    ridge_inference = SKLearn(
-        entry_point=inference_path,
-        framework_version=FRAMEWORK_VERSION,
-        instance_type=training_instance_type,
-        output_path=model_inference_path,
-        sagemaker_session=sagemaker_session,
-        role=role
-    )
-
-    model = Model(
-        image_uri=ridge_inference.training_image_uri(),
-        model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
-        sagemaker_session=PipelineSession(),
-        role=role
-    )
-    print("Define the model-Done")
-
-    # Model Step
-    step_create_model = ModelStep(
-        name="ModelCreationStep",
-        step_args=model.create()
-    )
-    print("step_create_model-Done")
-
-    transformer = Transformer(
-        model_name=step_create_model.properties.ModelName,
-        instance_type="ml.m5.large",
-        instance_count=1,
-        output_path=f"s3://{default_bucket}/Transform",
-        sagemaker_session=PipelineSession()
-    )
-    print("Define the transformer-Done")
-
-    # Define the batch transform step
-    step_transform = TransformStep(
-        name="BatchTransform",
-        step_args=transformer.transform(data="s3://rl-batch-transform-dataset/data.csv")
-    )
-    print("Define the step_transform-Done")
+    #
+    # model = Model(
+    #     image_uri=ridge_inference.training_image_uri(),
+    #     model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+    #     sagemaker_session=PipelineSession(),
+    #     role=role,
+    #     env={"SAGEMAKER_DEFAULT_INVOCATIONS_ACCEPT": "text/csv",
+    #          "SAGEMAKER_USE_NGINX": "True",
+    #          "SAGEMAKER_WORKER_CLASS_TYPE": "gevent",
+    #          "SAGEMAKER_KEEP_ALIVE_SEC": "60",
+    #          "SAGEMAKER_CONTAINER_LOG_LEVEL": "20",
+    #          "SAGEMAKER_PROGRAM": "my-script.py",
+    #          "SAGEMAKER_REGION": "us-east-2",
+    #          "SAGEMAKER_SUBMIT_DIRECTORY": "s3://my-bucket/my-key/source/sourcedir.tar.gz"
+    #          }
+    # )
+    # print("Define the model-Done")
+    #
+    # # Model Step
+    # step_create_model = ModelStep(
+    #     name="ModelCreationStep",
+    #     step_args=model.create()
+    # )
+    # print("step_create_model-Done")
+    #
+    # transformer = Transformer(
+    #     model_name=step_create_model.properties.ModelName,
+    #     instance_type="ml.m5.large",
+    #     instance_count=1,
+    #     output_path=f"s3://{default_bucket}/Transform",
+    #     sagemaker_session=PipelineSession()
+    # )
+    # print("Define the transformer-Done")
+    #
+    # # Define the batch transform step
+    # step_transform = TransformStep(
+    #     name="BatchTransform",
+    #     step_args=transformer.transform(data="s3://rl-batch-transform-dataset/data.csv")
+    # )
+    # print("Define the step_transform-Done")
 
     # step_create_model = ModelStep(
     #     name="AbaloneCreateModel",
@@ -375,7 +407,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train, step_eval, step_transform],
+        steps=[step_process, step_train, step_eval, step_predict],
         sagemaker_session=sagemaker_session,
     )
 

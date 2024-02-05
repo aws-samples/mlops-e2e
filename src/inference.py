@@ -1,36 +1,52 @@
-import os
+import logging
+import pathlib
+import tarfile
+
 import joblib
 import pandas as pd
-from io import StringIO
+import os
 
-# Function to load the model
-def model_fn(model_dir):
-    """Load the model from the directory."""
-    model_path = os.path.join(model_dir, 'model.joblib')
-    model = joblib.load(model_path)
-    return model
 
-# Function to deserialize the input data
-def input_fn(request_body, request_content_type):
-    """Parse input data payload."""
-    if request_content_type == 'text/csv':
-        data = pd.read_csv(StringIO(request_body), header=None)
-        return data
-    else:
-        raise ValueError(f"Unsupported content type: {request_content_type}")
 
-# Function to predict
-def predict_fn(input_data, model):
-    """Run predictions using the model."""
-    predictions = model.predict(input_data)
-    return predictions
+def is_within_directory(directory, target):
+    abs_directory = os.path.abspath(directory)
+    abs_target = os.path.abspath(target)
 
-# Function to serialize the predictions
-def output_fn(prediction, accept):
-    """Format predictions into the correct format."""
-    if accept == "application/json":
-        return prediction.to_json()
-    elif accept == "text/csv":
-        return prediction.to_csv(index=False)
-    else:
-        raise ValueError(f"Unsupported accept type: {accept}")
+    prefix = os.path.commonprefix([abs_directory, abs_target])
+
+    return prefix == abs_directory
+
+
+def safe_extract(tar, path="."):
+    for member in tar.getmembers():
+        member_path = os.path.join(path, member.name)
+        if not is_within_directory(path, member_path):
+            raise Exception("Attempted Path Traversal in Tar File")
+    tar.extractall(path)
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+logger.addHandler(logging.StreamHandler())
+
+if __name__ == "__main__":
+    logger.debug("Starting Prediction.")
+    model_path = "/opt/ml/processing/model/model.tar.gz"
+    with tarfile.open(model_path) as tar:
+        safe_extract(tar, path=".")
+
+    logger.debug("Loading Ridge model.")
+    model = joblib.load("model.joblib")
+
+    logger.debug("Reading data.")
+    data_to_predict_path = "/opt/ml/processing/transform/data_to_predict.csv"
+    data_to_predict = pd.read_csv(data_to_predict_path, header=None)
+
+    logger.info("Performing predictions against data.")
+    predictions = model.predict(data_to_predict)
+
+    output_dir = "/opt/ml/processing/transform"
+    pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+    logger.info("Writing out predictions")
+    pd.DataFrame(predictions).to_csv(f"{output_dir}/predictions.csv", header=False, index=False)
