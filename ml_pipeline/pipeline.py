@@ -407,7 +407,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train, step_predict],
+        steps=[step_process, step_train, step_eval, step_predict],
         sagemaker_session=sagemaker_session,
     )
 
