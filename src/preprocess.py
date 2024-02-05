@@ -31,7 +31,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 import joblib
 import tarfile
 
-
 feature_columns_names = [
     'Date',
     'location_id',
@@ -113,15 +112,19 @@ class DataProcessor:
     def process(self):
         self._logger.debug("Applying transforms.")
         x_location_features = self._input_data[["location_id"]].copy().to_numpy()
+
         x_pre = self._preprocess.transform(self._input_data)
         y_pre = self._input_data_y.to_numpy()  # .reshape(len(self._input_data_y), 1)
 
-        data_to_predict_location_features = self.data_to_predict[["location_id"]].copy().to_numpy()
+        data_to_predict_location_features = self.data_to_predict[["location_id",
+                                                                  "location_parking_type_id"]].copy().to_numpy()
+        data_to_predict_Date_feature = self.data_to_predict.index.copy().to_numpy()
+
         data_to_predict_pre = self._preprocess.transform(self.data_to_predict)
 
         return (np.concatenate((x_location_features, x_pre, y_pre), axis=1),
-                np.concatenate((data_to_predict_location_features, data_to_predict_pre), axis=1))
-
+                np.concatenate((data_to_predict_Date_feature, data_to_predict_location_features,
+                                data_to_predict_pre), axis=1))
 
     def merge_two_dicts(x, y):
         """Merges two dicts, returning a new copy."""

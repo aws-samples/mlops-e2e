@@ -53,7 +53,7 @@ from sagemaker.workflow.parameters import (
     ParameterString
 )
 from sagemaker.workflow.pipeline import Pipeline
-# from sagemaker.workflow.properties import PropertyFile
+from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
     TrainingStep
@@ -186,36 +186,36 @@ def get_pipeline(
 
     print("FINISH - TRAINING")
 
-    # evaluation_report = PropertyFile(
-    #     name="EvaluationReport",
-    #     output_name="evaluation",
-    #     path="evaluation.json",
-    # )
-    #
-    # print("FINISH - EV-REPORT")
-    #
-    # step_eval = ProcessingStep(
-    #     name="EvaluateModel",
-    #     processor=sklearn_processor,
-    #     inputs=[
-    #         ProcessingInput(
-    #             source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
-    #             destination="/opt/ml/processing/model",
-    #         ),
-    #         ProcessingInput(
-    #             source=step_process.properties.ProcessingOutputConfig.Outputs[
-    #                 "test"
-    #             ].S3Output.S3Uri,
-    #             destination="/opt/ml/processing/test",
-    #         ),
-    #     ],
-    #     outputs=[
-    #         ProcessingOutput(output_name="evaluation", source="/opt/ml/processing/evaluation"),
-    #     ],
-    #     code=os.path.join(BASE_DIR, "..", "src", "evaluate.py"),
-    #     property_files=[evaluation_report],
-    # )
-    # print("FINISH - EV step")
+    evaluation_report = PropertyFile(
+        name="EvaluationReport",
+        output_name="evaluation",
+        path="evaluation.json",
+    )
+
+    print("FINISH - EV-REPORT")
+
+    step_eval = ProcessingStep(
+        name="EvaluateModel",
+        processor=sklearn_processor,
+        inputs=[
+            ProcessingInput(
+                source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+                destination="/opt/ml/processing/model",
+            ),
+            ProcessingInput(
+                source=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "test"
+                ].S3Output.S3Uri,
+                destination="/opt/ml/processing/test",
+            ),
+        ],
+        outputs=[
+            ProcessingOutput(output_name="evaluation", source="/opt/ml/processing/evaluation"),
+        ],
+        code=os.path.join(BASE_DIR, "..", "src", "evaluate.py"),
+        property_files=[evaluation_report],
+    )
+    print("FINISH - EV step")
 
     step_predict = ProcessingStep(
         name="Predictions",
