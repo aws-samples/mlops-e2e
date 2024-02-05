@@ -118,7 +118,7 @@ class DataProcessor:
 
         data_to_predict_location_feature = self.data_to_predict[["location_id"]].copy().to_numpy()
         data_to_predict_location_type_feature = self.data_to_predict[["location_parking_type_id"]].copy().to_numpy()
-        data_to_predict_Date_feature = pd.DataFrame(self.data_to_predict.index).copy().to_numpy()
+        data_to_predict_Date_feature = pd.DataFrame(self.data_to_predict.index).astype(str).to_numpy()
 
         data_to_predict_pre = self._preprocess.transform(self.data_to_predict)
 
