@@ -57,12 +57,15 @@ from sagemaker.workflow.properties import PropertyFile
 from sagemaker.workflow.steps import (
     ProcessingStep,
     TrainingStep
-# ,TransformStep
+    # ,TransformStep
 
 )
 
 # from sagemaker.pipeline import PipelineModel
 # from sagemaker.workflow.step_collections import RegisterModel
+
+from sagemaker.workflow.lambda_step import LambdaStep
+from sagemaker.lambda_helper import Lambda
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -239,6 +242,21 @@ def get_pipeline(
     )
     print("FINISH - Predictions step")
 
+    # Define the Lambda function
+    lambda_function = Lambda(
+        function_arn="arn:aws:lambda:us-east-2:471112887763:function:rl-mlops-e2e-prediction-data-postprocessing-lambda")
+
+    # Create the Lambda step
+    lambda_step = LambdaStep(
+        name="LambdaStepWriteToRDS",
+        lambda_func=lambda_function,
+        inputs={
+            "LocationDataS3Uri": step_process.properties.ProcessingOutputConfig.Outputs[
+                "data_to_predict"].S3Output.S3Uri,
+            "PredictionsDataS3Uri": step_predict.properties.ProcessingOutputConfig.Outputs[
+                "predictions"].S3Output.S3Uri}
+    )
+
     # # register model step that will be conditionally executed
     # model_metrics = ModelMetrics(
     #     model_statistics=MetricsSource(
@@ -407,7 +425,7 @@ def get_pipeline(
             training_instance_type,
             model_approval_status
         ],
-        steps=[step_process, step_train, step_eval, step_predict],
+        steps=[step_process, step_train, step_eval, step_predict, lambda_step],
         sagemaker_session=sagemaker_session,
     )
 
