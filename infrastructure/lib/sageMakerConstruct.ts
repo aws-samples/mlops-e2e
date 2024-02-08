@@ -42,5 +42,13 @@ export class SageMakerConstruct extends Construct {
                 Resource: [this.sagemakerArtifactBucket.bucketArn, `${this.sagemakerArtifactBucket.bucketArn}/*`],
             })
         );
+
+        this.sagemakerExecutionRole.addToPolicy(
+            iam.PolicyStatement.fromJson({
+                Effect: 'Allow',
+                Action: ['lambda:InvokeFunction'],
+                Resource: ['arn:aws:lambda:*'],
+            })
+        );
     }
 }
