@@ -30,6 +30,7 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransfo
 
 import joblib
 import tarfile
+from scipy.sparse import issparse
 
 feature_columns_names = [
     'Date',
@@ -114,6 +115,7 @@ class DataProcessor:
         x_location_features = self._input_data[["location_id"]].copy().to_numpy()
 
         x_pre = self._preprocess.transform(self._input_data)
+        x_pre = convert_if_csr_matrix(x_pre)
         y_pre = self._input_data_y.to_numpy()  # .reshape(len(self._input_data_y), 1)
 
         data_to_predict_location_feature = self.data_to_predict[["location_id"]].copy().to_numpy()
@@ -121,6 +123,7 @@ class DataProcessor:
         data_to_predict_Date_feature = pd.DataFrame(self.data_to_predict.index).astype(str).to_numpy()
 
         data_to_predict_pre = self._preprocess.transform(self.data_to_predict)
+        data_to_predict_pre = convert_if_csr_matrix(data_to_predict_pre)
 
         return (np.concatenate((x_location_features, x_pre, y_pre), axis=1),
                 np.concatenate((data_to_predict_Date_feature, data_to_predict_location_feature,
@@ -290,7 +293,10 @@ def ffill_imputer(data, feature_columns):
     # Sort the DataFrame by 'location_id' and Date
     df_sorted = df_copy.sort_values(by=['location_id', 'location_parking_type_id', 'Date']).set_index('Date')
 
-    # # Group by 'location_id' and forward fill within each group
+    # Drop duplicates to avoid reindexing issues
+    df_sorted = df_sorted.drop_duplicates()
+
+    # Group by 'location_id' and forward fill within each group
     filled_data = df_sorted.groupby(['location_id', 'location_parking_type_id']).apply(
         lambda x: x.asfreq('1D')[feature_columns].ffill())
 
@@ -316,6 +322,13 @@ def cyclic_encode_month(df):
     df['month_Cos'] = np.cos(2 * np.pi * df['month'] / num_months)
     df = df.drop(columns=["month"])
     return df
+
+
+def convert_if_csr_matrix(sparse_matrix):
+    if issparse(sparse_matrix):  # Check if the input is a sparse matrix
+        return sparse_matrix.toarray()  # Convert to a dense numpy array
+    else:
+        return sparse_matrix  # Return the original matrix if it's not sparse
 
 
 def run_main():
