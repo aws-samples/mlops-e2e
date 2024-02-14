@@ -19,6 +19,7 @@ import logging
 import os
 import pathlib
 import json
+from datetime import timedelta
 
 import boto3
 import numpy as np
@@ -172,8 +173,13 @@ class DataProcessor:
         preprocessed_data = self._input_data.copy()
         preprocessed_data["Date"] = self._input_data.index
 
-        train_data = preprocessed_data[~preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
-        prediction_data = preprocessed_data[preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
+        current_date = (pd.Timestamp("today") - timedelta(1)).strftime("%Y-%m-%d")
+
+        # train_data = preprocessed_data[~preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
+        train_data = preprocessed_data[preprocessed_data["Date"] < current_date]
+
+        # prediction_data = preprocessed_data[preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
+        prediction_data = preprocessed_data[preprocessed_data["Date"] == current_date]
 
         data_for_modeling = train_data.dropna().copy()
 
