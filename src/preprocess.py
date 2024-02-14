@@ -139,8 +139,12 @@ class DataProcessor:
     def preprocess_data(self) -> pd.DataFrame:
         """ Add feature lags and prediction steps for time series forecasting  """
 
+        df = self._input_data[(self._input_data["Date"] >= "2021-03-01")]
+
+        df = df[~(df["location_parking_type_id"].isin([197, 317, 337]))]
+
         # impute missing values
-        df = ffill_imputer(self._input_data, feature_columns="count_of_trx")
+        df = ffill_imputer(df, feature_columns="count_of_trx")
 
         # Format count_of_trx and Date
         df["count_of_trx"] = df["count_of_trx"].astype("Int64")
@@ -173,7 +177,7 @@ class DataProcessor:
         preprocessed_data = self._input_data.copy()
         preprocessed_data["Date"] = self._input_data.index
 
-        #todo
+        # todo
         # current_date = (pd.Timestamp("today") - timedelta(1)).strftime("%Y-%m-%d")
         current_date = preprocessed_data["Date"].max().strftime("%Y-%m-%d")
 
@@ -303,8 +307,6 @@ def ffill_imputer(data, feature_columns):
 
     # Sort the DataFrame by 'location_id' and Date
     df_sorted = df_copy.sort_values(by=['location_id', 'location_parking_type_id', 'Date']).set_index('Date')
-
-
 
     # Group by 'location_id' and forward fill within each group
     filled_data = df_sorted.groupby(['location_id', 'location_parking_type_id']).apply(
