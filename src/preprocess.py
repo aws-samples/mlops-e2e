@@ -173,7 +173,9 @@ class DataProcessor:
         preprocessed_data = self._input_data.copy()
         preprocessed_data["Date"] = self._input_data.index
 
-        current_date = (pd.Timestamp("today") - timedelta(1)).strftime("%Y-%m-%d")
+        #todo
+        # current_date = (pd.Timestamp("today") - timedelta(1)).strftime("%Y-%m-%d")
+        current_date = preprocessed_data["Date"].max().strftime("%Y-%m-%d")
 
         # train_data = preprocessed_data[~preprocessed_data["count_of_trx_14_day_ahead"].isnull()]
         train_data = preprocessed_data[preprocessed_data["Date"] < current_date]
@@ -296,11 +298,13 @@ def ffill_imputer(data, feature_columns):
     # Format Date
     df_copy['Date'] = pd.to_datetime(df_copy['Date'], format='%Y-%m-%d')
 
+    # Drop duplicates to avoid reindexing issues
+    df_copy = df_copy.drop_duplicates()
+
     # Sort the DataFrame by 'location_id' and Date
     df_sorted = df_copy.sort_values(by=['location_id', 'location_parking_type_id', 'Date']).set_index('Date')
 
-    # Drop duplicates to avoid reindexing issues
-    df_sorted = df_sorted.drop_duplicates()
+
 
     # Group by 'location_id' and forward fill within each group
     filled_data = df_sorted.groupby(['location_id', 'location_parking_type_id']).apply(
