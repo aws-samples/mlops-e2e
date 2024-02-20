@@ -27,7 +27,8 @@ import pandas as pd
 
 from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, FunctionTransformer
+from sklearn.preprocessing import StandardScaler, FunctionTransformer  # ,OneHotEncoder
+from category_encoders import BinaryEncoder
 
 import joblib
 import tarfile
@@ -47,8 +48,8 @@ label_column = ['count_of_trx_1_day_ahead', 'count_of_trx_2_day_ahead', 'count_o
                 'count_of_trx_13_day_ahead', 'count_of_trx_14_day_ahead']
 
 feature_columns_dtype = {
-    "location_id": np.int64,
-    "location_parking_type_id": np.int64,
+    "location_id": 'category',
+    "location_parking_type_id": 'category',
     "count_of_trx": np.int64
 }
 
@@ -82,9 +83,10 @@ class DataProcessor:
             steps=[("scaler", StandardScaler())]
         )
 
-        categorical_features = ["location_id"]
+        categorical_features = ["location_id", "location_parking_type_id"]
+
         categorical_transformer = Pipeline(
-            steps=[("onehot", OneHotEncoder(handle_unknown="ignore"))])
+            steps=[("binary-encoding", BinaryEncoder())])
 
         # Pipeline with FunctionTransformer for cyclic encoding
         cyclic_encoder_day = FunctionTransformer(cyclic_encode_weekday)
@@ -114,6 +116,7 @@ class DataProcessor:
     def process(self):
         self._logger.debug("Applying transforms.")
         x_location_features = self._input_data[["location_id"]].copy().to_numpy()
+        x_location_type_feature = self._input_data[["location_parking_type_id"]].copy().to_numpy()
 
         x_pre = self._preprocess.transform(self._input_data)
         x_pre = convert_if_csr_matrix(x_pre)
@@ -126,7 +129,7 @@ class DataProcessor:
         data_to_predict_pre = self._preprocess.transform(self.data_to_predict)
         data_to_predict_pre = convert_if_csr_matrix(data_to_predict_pre)
 
-        return (np.concatenate((x_location_features, x_pre, y_pre), axis=1),
+        return (np.concatenate((x_location_features,x_location_type_feature, x_pre, y_pre), axis=1),
                 np.concatenate((data_to_predict_Date_feature, data_to_predict_location_feature,
                                 data_to_predict_location_type_feature, data_to_predict_pre), axis=1))
 
@@ -141,7 +144,8 @@ class DataProcessor:
 
         df = self._input_data[(self._input_data["Date"] >= "2021-03-01")]
 
-        df = df[~(df["location_parking_type_id"].isin([197, 317, 337]))]
+        # exclude short time series (less than 5 months) in the last 12 months
+        df = exclude_short_time_series(df)
 
         # impute missing values
         df = ffill_imputer(df, feature_columns="count_of_trx")
@@ -266,9 +270,9 @@ class DataSplitter:
 
             # Determine the train-test split for the specific site
             # ======================================================================================
-            train_size_site = int(0.80 * len(site_data))
-            train_data_site = site_data[:train_size_site, 1:]
-            test_data_site = site_data[train_size_site:, 1:]
+            train_size_site = int(0.95 * len(site_data))
+            train_data_site = site_data[:train_size_site, 2:]
+            test_data_site = site_data[train_size_site:, 2:]
 
             # Append the data to respective lists
             train_time_list.append(train_data_site[:, :])
@@ -316,6 +320,30 @@ def ffill_imputer(data, feature_columns):
     filled_data = filled_data.reset_index()
 
     return filled_data
+
+
+def exclude_short_time_series(data):
+    """
+    exclude short time series with less than 5 months
+    """
+    df_copy = data.copy()
+
+    df_copy['Date'] = pd.to_datetime(df_copy['Date'])
+
+    reference_date = pd.to_datetime('today')
+
+    date_12_months_ago = reference_date - pd.DateOffset(months=12)
+
+    df_copy[df_copy['Date'] >= date_12_months_ago]
+
+    df_group = df_copy.groupby(['location_id', 'location_parking_type_id'])["count_of_trx"].count().reset_index()
+
+    df_group = df_group.query("count_of_trx >= 150")
+
+    df_filtered = pd.merge(df_copy, df_group[['location_id', 'location_parking_type_id']],
+                           on=['location_id', 'location_parking_type_id'], how='inner')
+
+    return df_filtered
 
 
 # Function to perform cyclic encoding for Day of the Week
