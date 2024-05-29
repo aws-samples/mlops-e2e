@@ -64,7 +64,7 @@ export class ModelDeploymentStack extends Stack {
         );
 
         const pipelineModelFunction = new lambdaNodeJs.NodejsFunction(this, 'PipelineModelFunction', {
-            runtime: lambda.Runtime.NODEJS_14_X,
+            runtime: lambda.Runtime.NODEJS_16_X,
             handler: 'handler',
             entry: path.join(__dirname, '../customResources/pipelineModel/index.ts'),
             timeout: Duration.minutes(1),

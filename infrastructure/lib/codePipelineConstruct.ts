@@ -255,6 +255,7 @@ export class CodePipelineConstruct extends Construct {
         deployRole.addToPolicy(
             new iam.PolicyStatement({
                 actions: [
+                    'cloudformation:*',
                     'cloudformation:DescribeStacks',
                     'cloudformation:CreateChangeSet',
                     'cloudformation:DescribeChangeSet',

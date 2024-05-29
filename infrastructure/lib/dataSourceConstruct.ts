@@ -50,7 +50,7 @@ export class DataSourceConstruct extends Construct {
         this.dataBucket.addObjectCreatedNotification(new s3Notification.SnsDestination(newDataTopic));
 
         const dataMonitorFunction = new lambdaNodeJs.NodejsFunction(this, 'DataSourceMonitorFunction', {
-            runtime: lambda.Runtime.NODEJS_14_X,
+            runtime: lambda.Runtime.NODEJS_16_X,
             handler: 'handler',
             entry: path.join(__dirname, '../functions/dataSourceMonitor/src/index.ts'),
             timeout: Duration.minutes(1),
