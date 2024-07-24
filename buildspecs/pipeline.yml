@@ -16,6 +16,7 @@ phases:
         else
           echo "Neither yum nor apt-get found"
           exit 1
+        fi
       - echo "Installing Python dependencies ..."
       - pip install --upgrade pip
 
