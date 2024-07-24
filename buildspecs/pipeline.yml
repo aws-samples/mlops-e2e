@@ -9,10 +9,10 @@ phases:
       - |
         if command -v yum > /dev/null; then
           yum -y update
-          yum -y install gcc
+          yum -y install gcc python3-devel libyaml-devel
         elif command -v apt-get > /dev/null; then
           apt-get update
-          apt-get install -y gcc
+          apt-get install -y gcc python3-dev libyaml-dev
         else
           echo "Neither yum nor apt-get found"
           exit 1
