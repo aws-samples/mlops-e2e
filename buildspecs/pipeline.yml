@@ -1,18 +1,29 @@
 version: 0.2
 
-env:
-  variables:
-    pythonversion: 3.10
-
 phases:
   install:
     runtime-versions:
-      python: $pythonversion
+      python: 3.10
+    commands:
+      - echo "Installing system dependencies ..."
+      - yum -y install gcc
+      - echo "Installing Python dependencies ..."
+      - pip install --upgrade pip
+
+  pre_build:
+    commands:
+      - echo "Setting up the environment ..."
+      - python -m venv .venv
+      - source .venv/bin/activate
 
   build:
     commands:
+      - echo "Installing Python packages ..."
+      - pip install -r requirements.txt
+      - pip install sagemaker==2.148.0
+      - echo "Running the pipeline script ..."
       - bash scripts/run_pipeline.sh
 
 artifacts:
   files:
-    - 'pipelineExecution.json'
+    - pipelineExecution.json
