@@ -20,7 +20,7 @@ pip install --upgrade pip
 pip install Cython
 
 #Install requirements
-pip install -r requirements.txt
+pip install -r ml_pipeline/requirements.txt
 pip install sagemaker==2.148.0
 
 echo "Starting Pipeline Execution"

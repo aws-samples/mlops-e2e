@@ -29,10 +29,10 @@ phases:
   build:
     commands:
       - echo "Installing Python packages ..."
-      - pip install -r ../ml_pipeline/requirements.txt
+      - pip install -r ml_pipeline/requirements.txt
       - pip install sagemaker==2.148.0
       - echo "Running the pipeline script ..."
-      - bash ../scripts/run_pipeline.sh
+      - bash scripts/run_pipeline.sh
 
 artifacts:
   files:
