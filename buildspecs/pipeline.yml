@@ -17,14 +17,14 @@ phases:
           echo "Neither yum nor apt-get found"
           exit 1
         fi
-      - echo "Installing Python dependencies ..."
-      - pip install --upgrade pip
+      - echo "Installing virtualenv ..."
+      - pip install virtualenv
 
   pre_build:
     commands:
       - echo "Setting up the environment ..."
-      - python -m venv .venv
-      - source .venv/bin/activate
+      - virtualenv --copies .venv
+      - . .venv/bin/activate
 
   build:
     commands:
