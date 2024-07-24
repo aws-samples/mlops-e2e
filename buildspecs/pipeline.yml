@@ -1,4 +1,4 @@
-version: 0.2
+version: '0.2'
 
 phases:
   install:
@@ -6,7 +6,16 @@ phases:
       python: 3.10
     commands:
       - echo "Installing system dependencies ..."
-      - yum -y install gcc
+      - |
+        if command -v yum > /dev/null; then
+          yum -y update
+          yum -y install gcc
+        elif command -v apt-get > /dev/null; then
+          apt-get update
+          apt-get install -y gcc
+        else
+          echo "Neither yum nor apt-get found"
+          exit 1
       - echo "Installing Python dependencies ..."
       - pip install --upgrade pip
 
