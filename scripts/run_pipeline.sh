@@ -13,6 +13,12 @@ pushd ml_pipeline
 virtualenv -p python3 $VIRTUAL_ENV
 . $VIRTUAL_ENV/bin/activate 
 
+# Upgrade pip to avoid compatibility issues
+pip install --upgrade pip
+
+# Install Cython first
+pip install Cython
+
 #Install requirements
 pip install -r requirements.txt
 pip install sagemaker==2.148.0

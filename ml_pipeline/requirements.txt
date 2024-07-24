@@ -1,1 +1,3 @@
 boto3==1.26.118
+sagemaker==2.148.0
+Cython
