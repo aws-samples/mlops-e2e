@@ -17,6 +17,8 @@ phases:
           echo "Neither yum nor apt-get found"
           exit 1
         fi
+      - echo "Upgrading setuptools ..."
+      - pip install --upgrade setuptools
       - echo "Installing virtualenv ..."
       - pip install virtualenv
 
@@ -29,8 +31,8 @@ phases:
   build:
     commands:
       - echo "Installing Python packages ..."
+      - pip install cython
       - pip install -r ml_pipeline/requirements.txt
-      - pip install sagemaker==2.148.0
       - echo "Running the pipeline script ..."
       - bash scripts/run_pipeline.sh
 
