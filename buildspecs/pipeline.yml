@@ -38,4 +38,4 @@ phases:
 
 artifacts:
   files:
-    - **/pipelineExecution.json
+    - '**/pipelineExecution.json'
