@@ -20,7 +20,7 @@ pip install Cython
 pip install boto3==1.26.118 sagemaker==2.148.0
 
 # Install PyYAML using the setup.py to avoid wheel issues
-pip install --no-binary :all: PyYAML==5.4.1
+pip install --no-binary :all: PyYAML==5.3.1
 
 echo "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE
