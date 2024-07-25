@@ -15,6 +15,8 @@ virtualenv -p python3 $VIRTUAL_ENV
 
 #Install requirements
 pip install -r requirements.txt
+pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver
+pip install wheel
 pip install sagemaker==2.148.0
 
 echo "Starting Pipeline Execution"
