@@ -16,11 +16,8 @@ virtualenv -p python3 $VIRTUAL_ENV
 # Upgrade pip to avoid compatibility issues
 pip install --upgrade pip
 
-# Install Cython first
-pip install Cython
-
-#Install requirements
-pip install -r ml_pipeline/requirements.txt
+# Install requirements
+pip install -r requirements.txt
 pip install sagemaker==2.148.0
 
 echo "Starting Pipeline Execution"
