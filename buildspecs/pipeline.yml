@@ -30,9 +30,10 @@ phases:
 
   build:
     commands:
-      - bash scripts/run_pipeline.sh
+      - echo "Running pipeline script ..."
+      - cd $CODEBUILD_SRC_DIR/scripts
+      - bash run_pipeline.sh
 
 artifacts:
   files:
     - 'pipelineExecution.json'
-
