@@ -1,38 +1,18 @@
-version: '0.2'
+version: 0.2
+
+env:
+  variables:
+    pythonversion: 3.10
 
 phases:
   install:
     runtime-versions:
-      python: 3.10
-    commands:
-      - echo "Installing system dependencies ..."
-      - |
-        if command -v yum > /dev/null; then
-          yum -y update
-          yum -y install gcc python3-devel libyaml-devel
-        elif command -v apt-get > /dev/null; then
-          apt-get update
-          apt-get install -y gcc python3-dev libyaml-dev
-        else
-          echo "Neither yum nor apt-get found"
-          exit 1
-        fi
-      - echo "Upgrading setuptools ..."
-      - pip3 install --upgrade setuptools
-      - echo "Installing virtualenv ..."
-      - pip3 install virtualenv
-
-  pre_build:
-    commands:
-      - echo "Setting up the environment ..."
-      - virtualenv --copies .venv
-      - . .venv/bin/activate
+      python: $pythonversion
 
   build:
     commands:
-      - echo "Running pipeline script ..."
-      - bash $CODEBUILD_SRC_DIR/scripts/run_pipeline.sh
+      - bash scripts/run_pipeline.sh
 
 artifacts:
   files:
-    - 'ml_pipeline/pipelineExecution.json'
+    - 'pipelineExecution.json'

@@ -2,36 +2,34 @@
 
 set -e
 
+# Create/Update the SageMaker Pipeline and wait for the execution to be completed
+
+VIRTUAL_ENV=.venv
 DATA_MANIFEST=`cat ./dataManifest.json`
 
-# Navigate to the ml_pipeline directory
-cd $CODEBUILD_SRC_DIR/ml_pipeline
+pushd ml_pipeline
 
-# Set up the virtual environment in the correct directory
-python3 -m venv .venv
-source .venv/bin/activate 
+# Set up virtual env
+virtualenv -p python3 $VIRTUAL_ENV
+. $VIRTUAL_ENV/bin/activate 
 
-# Upgrade pip to avoid compatibility issues
-pip install --upgrade pip
-
-# Install Cython first
-pip install Cython
-
-# Install requirements
+#Install requirements
 pip install -r requirements.txt
+pip install sagemaker==2.148.0
 
 echo "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE
 python run_pipeline.py --module-name pipeline \
-       --role-arn $SAGEMAKER_PIPELINE_ROLE_ARN \
-       --tags "[{\"Key\":\"sagemaker:project-name\", \"Value\":\"${SAGEMAKER_PROJECT_NAME}\"}]" \
-       --kwargs "{\"region\":\"${AWS_REGION}\",\"role\":\"${SAGEMAKER_PIPELINE_ROLE_ARN}\",\"default_bucket\":\"${SAGEMAKER_ARTIFACT_BUCKET}\",\"pipeline_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"model_package_group_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"base_job_prefix\":\"${SAGEMAKER_PROJECT_NAME}\"}"
+        --role-arn $SAGEMAKER_PIPELINE_ROLE_ARN \
+        --tags "[{\"Key\":\"sagemaker:project-name\", \"Value\":\"${SAGEMAKER_PROJECT_NAME}\"}]" \
+        --kwargs "{\"region\":\"${AWS_REGION}\",\"role\":\"${SAGEMAKER_PIPELINE_ROLE_ARN}\",\"default_bucket\":\"${SAGEMAKER_ARTIFACT_BUCKET}\",\"pipeline_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"model_package_group_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"base_job_prefix\":\"${SAGEMAKER_PROJECT_NAME}\"}"
 
 echo "Create/Update of the SageMaker Pipeline and execution Completed."
 
-# Deactivate the virtual environment
+# Deactivate virtual envs
 deactivate
 
-# Export the MODEL_PACKAGE_NAME from the pipeline execution output
-export MODEL_PACKAGE_NAME=$(cat $CODEBUILD_SRC_DIR/ml_pipeline/pipelineExecutionArn)
-echo "{\"arn\": \"${MODEL_PACKAGE_NAME}\"}" > $CODEBUILD_SRC_DIR/ml_pipeline/pipelineExecution.json
+popd
+
+export MODEL_PACKAGE_NAME=`cat ml_pipeline/pipelineExecutionArn` 
+echo "{\"arn\": \"${MODEL_PACKAGE_NAME}\"}" > pipelineExecution.json
