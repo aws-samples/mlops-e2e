@@ -30,12 +30,9 @@ phases:
 
   build:
     commands:
-      - echo "Installing Python packages ..."
-      - pip install cython
-      - pip install -r ml_pipeline/requirements.txt
-      - echo "Running the pipeline script ..."
       - bash scripts/run_pipeline.sh
 
 artifacts:
   files:
-    - '**/pipelineExecution.json'
+    - 'pipelineExecution.json'
+
