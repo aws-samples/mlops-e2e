@@ -18,9 +18,9 @@ phases:
           exit 1
         fi
       - echo "Upgrading setuptools ..."
-      - pip install --upgrade setuptools
+      - pip3 install --upgrade setuptools
       - echo "Installing virtualenv ..."
-      - pip install virtualenv
+      - pip3 install virtualenv
 
   pre_build:
     commands:
