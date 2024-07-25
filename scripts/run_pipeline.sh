@@ -2,6 +2,8 @@
 
 set -e
 
+DATA_MANIFEST=`cat ./dataManifest.json`
+
 # Navigate to the ml_pipeline directory
 cd $CODEBUILD_SRC_DIR/ml_pipeline
 
@@ -31,5 +33,5 @@ echo "Create/Update of the SageMaker Pipeline and execution Completed."
 deactivate
 
 # Export the MODEL_PACKAGE_NAME from the pipeline execution output
-export MODEL_PACKAGE_NAME=`cat $CODEBUILD_SRC_DIR/ml_pipeline/pipelineExecutionArn` 
+export MODEL_PACKAGE_NAME=$(cat $CODEBUILD_SRC_DIR/ml_pipeline/pipelineExecutionArn)
 echo "{\"arn\": \"${MODEL_PACKAGE_NAME}\"}" > $CODEBUILD_SRC_DIR/ml_pipeline/pipelineExecution.json

@@ -35,4 +35,4 @@ phases:
 
 artifacts:
   files:
-    - 'pipelineExecution.json'
+    - 'ml_pipeline/pipelineExecution.json'
