@@ -2,7 +2,7 @@
     "projectName": "mlops-e2e",
     "repoType": "git",
     "git": {
-        "githubConnectionArn": "arn:aws:codestar-connections:eu-west-1:807410046616:connection/4aec0151-0996-4b7e-b2dd-9539220f6285",
+        "githubConnectionArn": "arn:aws:codestar-connections:eu-west-1:807410046616:connection/f5121989-a8cb-4425-ba38-ee63abd14e4a",
         "githubRepoOwner": "imsalmanmalik",
         "githubRepoName": "mlops-e2e"
     },

@@ -14,13 +14,8 @@ virtualenv -p python3 $VIRTUAL_ENV
 . $VIRTUAL_ENV/bin/activate 
 
 #Install requirements
-pip install Cython
-
-# Install requirements with PyYAML handled separately
-pip install boto3==1.26.118 sagemaker==2.148.0
-
-# Install PyYAML using the setup.py to avoid wheel issues
-pip install --no-binary :all: PyYAML==5.3.1
+pip install -r requirements.txt
+pip install sagemaker==2.148.0
 
 echo "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE
