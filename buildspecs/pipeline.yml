@@ -11,12 +11,13 @@ phases:
     commands:
       - echo "Setting up virtual environment..."
       - python -m venv .venv
-      - source .venv/bin/activate
+      - . .venv/bin/activate
       - echo "Upgrading pip, setuptools, and installing dependencies..."
       - pip install --upgrade pip setuptools cython wheel
   pre_build:
     commands:
       - echo "Installing Python dependencies..."
+      - . .venv/bin/activate
       - pip install boto3==1.26.118
       - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver
       - pip install sagemaker==2.148.0
