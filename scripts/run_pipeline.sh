@@ -2,45 +2,34 @@
 
 set -e
 
-# Logging function
-log() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*"
-}
-
-log "Starting run_pipeline.sh script..."
-
 # Create/Update the SageMaker Pipeline and wait for the execution to be completed
 
 VIRTUAL_ENV=.venv
-DATA_MANIFEST=$(cat ./dataManifest.json)
-
-log "Data manifest loaded: $DATA_MANIFEST"
+DATA_MANIFEST=`cat ./dataManifest.json`
 
 pushd ml_pipeline
 
-log "Setting up and activating virtual environment"
-source ../$VIRTUAL_ENV/bin/activate
+# Set up virtual env
+virtualenv -p python3 $VIRTUAL_ENV
+. $VIRTUAL_ENV/bin/activate 
 
-# Ensure sagemaker module is available
-python -c "import sagemaker" || { log "SageMaker module not found"; exit 1; }
+#Install requirements
+pip install -r requirements.txt
+pip install sagemaker==2.148.0
 
-log "Starting Pipeline Execution"
+echo "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE
-
 python run_pipeline.py --module-name pipeline \
         --role-arn $SAGEMAKER_PIPELINE_ROLE_ARN \
         --tags "[{\"Key\":\"sagemaker:project-name\", \"Value\":\"${SAGEMAKER_PROJECT_NAME}\"}]" \
         --kwargs "{\"region\":\"${AWS_REGION}\",\"role\":\"${SAGEMAKER_PIPELINE_ROLE_ARN}\",\"default_bucket\":\"${SAGEMAKER_ARTIFACT_BUCKET}\",\"pipeline_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"model_package_group_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"base_job_prefix\":\"${SAGEMAKER_PROJECT_NAME}\"}"
 
-log "Pipeline execution completed"
+echo "Create/Update of the SageMaker Pipeline and execution Completed."
 
-log "Deactivating virtual environment"
+# Deactivate virtual envs
 deactivate
 
 popd
 
-export MODEL_PACKAGE_NAME=$(cat ml_pipeline/pipelineExecutionArn) 
-log "Model package name: $MODEL_PACKAGE_NAME"
-
+export MODEL_PACKAGE_NAME=`cat ml_pipeline/pipelineExecutionArn` 
 echo "{\"arn\": \"${MODEL_PACKAGE_NAME}\"}" > pipelineExecution.json
-log "Pipeline execution JSON created"
