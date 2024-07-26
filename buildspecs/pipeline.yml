@@ -13,14 +13,15 @@ phases:
       - python -m venv .venv
       - . .venv/bin/activate
       - echo "Upgrading pip, setuptools, and installing dependencies..."
-      - pip install --upgrade pip setuptools cython wheel
+      - pip install --upgrade pip
+      - pip install setuptools==57.5.0  # Ensure a compatible version of setuptools
+      - pip install cython wheel
   pre_build:
     commands:
       - echo "Installing Python dependencies..."
       - . .venv/bin/activate
       - pip install boto3==1.26.118
-      - pip install 'setuptools<58.0.0'
-      - pip install PyYAML==5.3.1
+      - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver || pip install PyYAML==5.4.1 --no-build-isolation
       - pip install sagemaker==2.148.0
       - echo "Dependencies installed successfully"
   build:
