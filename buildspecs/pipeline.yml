@@ -1,4 +1,4 @@
-version: "0.2"
+version: 0.2
 
 env:
   variables:
@@ -19,14 +19,14 @@ phases:
       - echo "Installing Python dependencies..."
       - . .venv/bin/activate
       - pip install boto3==1.26.118
-      - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver
+      - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver || pip install PyYAML==5.4.1 --no-build-isolation
       - pip install sagemaker==2.148.0
+      - echo "Dependencies installed successfully"
   build:
     commands:
       - echo "Reading data manifest..."
       - DATA_MANIFEST=$(cat ./dataManifest.json)
       - echo "Starting Pipeline Execution"
-      - export PYTHONUNBUFFERED=TRUE
       - bash scripts/run_pipeline.sh
 
 artifacts:
