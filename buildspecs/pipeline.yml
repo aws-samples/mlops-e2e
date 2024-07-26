@@ -1,27 +1,23 @@
 version: 0.2
 
-env:
-  variables:
-    pythonversion: 3.10
-
 phases:
   install:
     runtime-versions:
-      python: $pythonversion
+      python: 3.10
     commands:
       - echo "Setting up virtual environment..."
       - python -m venv .venv
       - . .venv/bin/activate
       - echo "Upgrading pip, setuptools, and installing dependencies..."
       - pip install --upgrade pip
-      - pip install setuptools==57.5.0  # Ensure a compatible version of setuptools
+      - pip install setuptools==57.5.0
       - pip install cython wheel
   pre_build:
     commands:
       - echo "Installing Python dependencies..."
       - . .venv/bin/activate
-      - pip install boto3==1.26.118
-      - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver || pip install PyYAML==5.4.1 --no-build-isolation
+      - pip install boto3==1.29.2  # Updated boto3 to a compatible version
+      - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver
       - pip install sagemaker==2.148.0
       - echo "Dependencies installed successfully"
   build:
