@@ -19,7 +19,10 @@ log "Data manifest loaded: $DATA_MANIFEST"
 pushd ml_pipeline
 
 log "Setting up and activating virtual environment"
-source ../$VIRTUAL_ENV/bin/activate 
+source ../$VIRTUAL_ENV/bin/activate
+
+# Ensure sagemaker module is available
+python -c "import sagemaker" || { log "SageMaker module not found"; exit 1; }
 
 log "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE

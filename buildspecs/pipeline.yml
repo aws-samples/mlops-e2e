@@ -23,6 +23,8 @@ phases:
       - echo "Dependencies installed successfully"
   build:
     commands:
+      - echo "Activating virtual environment for build..."
+      - . .venv/bin/activate
       - echo "Reading data manifest..."
       - DATA_MANIFEST=$(cat ./dataManifest.json)
       - echo "Starting Pipeline Execution"
