@@ -8,10 +8,33 @@ phases:
   install:
     runtime-versions:
       python: $pythonversion
+    commands:
+      - echo "Setting up virtual environment..."
+      - python -m venv .venv
+      - source .venv/bin/activate
+      - echo "Upgrading pip, setuptools, and installing dependencies..."
+      - pip install --upgrade pip setuptools cython wheel
+      - pip install boto3==1.26.118
+      - pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver
+      - pip install sagemaker==2.148.0
 
   build:
     commands:
-      - bash scripts/run_pipeline.sh
+      - echo "Reading data manifest..."
+      - DATA_MANIFEST=$(cat ./dataManifest.json)
+      - echo "Starting Pipeline Execution"
+      - export PYTHONUNBUFFERED=TRUE
+      - |
+        python ml_pipeline/run_pipeline.py --module-name pipeline \
+          --role-arn $SAGEMAKER_PIPELINE_ROLE_ARN \
+          --tags "[{\"Key\":\"sagemaker:project-name\", \"Value\":\"${SAGEMAKER_PROJECT_NAME}\"}]" \
+          --kwargs "{\"region\":\"${AWS_REGION}\",\"role\":\"${SAGEMAKER_PIPELINE_ROLE_ARN}\",\"default_bucket\":\"${SAGEMAKER_ARTIFACT_BUCKET}\",\"pipeline_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"model_package_group_name\":\"${SAGEMAKER_PROJECT_NAME}\",\"base_job_prefix\":\"${SAGEMAKER_PROJECT_NAME}\"}"
+      - echo "Create/Update of the SageMaker Pipeline and execution Completed."
+
+  post_build:
+    commands:
+      - export MODEL_PACKAGE_NAME=$(cat ml_pipeline/pipelineExecutionArn)
+      - echo "{\"arn\": \"${MODEL_PACKAGE_NAME}\"}" > pipelineExecution.json
 
 artifacts:
   files:
