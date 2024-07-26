@@ -5,19 +5,12 @@ set -e
 # Create/Update the SageMaker Pipeline and wait for the execution to be completed
 
 VIRTUAL_ENV=.venv
-DATA_MANIFEST=`cat ./dataManifest.json`
+DATA_MANIFEST=$(cat ./dataManifest.json)
 
 pushd ml_pipeline
 
-# Set up virtual env
-virtualenv -p python3 $VIRTUAL_ENV
-. $VIRTUAL_ENV/bin/activate 
-
-#Install requirements
-pip install -r requirements.txt
-pip install PyYAML==5.4.1 --use-deprecated=legacy-resolver
-pip install wheel
-pip install sagemaker==2.148.0
+# Activate virtual env
+source ../$VIRTUAL_ENV/bin/activate 
 
 echo "Starting Pipeline Execution"
 export PYTHONUNBUFFERED=TRUE
@@ -28,10 +21,10 @@ python run_pipeline.py --module-name pipeline \
 
 echo "Create/Update of the SageMaker Pipeline and execution Completed."
 
-# Deactivate virtual envs
+# Deactivate virtual env
 deactivate
 
 popd
 
-export MODEL_PACKAGE_NAME=`cat ml_pipeline/pipelineExecutionArn` 
+export MODEL_PACKAGE_NAME=$(cat ml_pipeline/pipelineExecutionArn) 
 echo "{\"arn\": \"${MODEL_PACKAGE_NAME}\"}" > pipelineExecution.json
