@@ -24,7 +24,7 @@ phases:
       - DATA_MANIFEST=$(cat ./dataManifest.json)
       - echo "Starting Pipeline Execution"
       - export PYTHONUNBUFFERED=TRUE
-      - |
+      - >
         python ml_pipeline/run_pipeline.py --module-name pipeline \
         --role-arn $SAGEMAKER_PIPELINE_ROLE_ARN \
         --tags '[{"Key":"sagemaker:project-name", "Value":"${SAGEMAKER_PROJECT_NAME}"}]' \
