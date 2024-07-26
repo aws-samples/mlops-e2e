@@ -19,13 +19,9 @@ phases:
       - echo "Installing Python dependencies..."
       - . .venv/bin/activate
       - pip install boto3==1.26.118
-      - pip install sagemaker==2.148.0
-      - echo "Directly installing build dependencies for PyYAML..."
-      - pip install Cython==0.29.21
-      - pip install wheel
       - pip install 'setuptools<58.0.0'
-      - echo "Trying different methods to install PyYAML..."
-      - pip install PyYAML==5.4.1 || pip install PyYAML==5.4.1 --no-build-isolation || pip install PyYAML==5.4.1 --use-pep517 || pip install PyYAML==5.3.1
+      - pip install PyYAML==5.3.1
+      - pip install sagemaker==2.148.0
       - echo "Dependencies installed successfully"
   build:
     commands:
