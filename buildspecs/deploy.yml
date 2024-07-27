@@ -1,16 +1,20 @@
 version: "0.2"
 
-env:
-  variables:
-    nodeversion: 16
-    pythonversion: 3.10
-
 phases:
   install:
     runtime-versions:
-      python: $pythonversion
-      nodejs: $nodeversion
+      nodejs: 18
+      python: 3.10
+
+  pre_build:
+    commands:
+      - echo "Installing dependencies"
+      - yarn install --check-files
 
   build:
     commands:
+      - echo "Reading pipeline execution JSON"
+      - MODEL_PACKAGE_NAME=$(cat ${CODEBUILD_SRC_DIR_PipelineOutput}/pipelineExecution.json | jq ".arn" -r)
+      - echo MODEL_PACKAGE_NAME=${MODEL_PACKAGE_NAME}
+      - echo "Running deployment script"
       - bash scripts/deploy.sh
