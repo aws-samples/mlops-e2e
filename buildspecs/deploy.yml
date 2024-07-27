@@ -1,16 +1,19 @@
-version: "0.2"
+version: 0.2
 
 phases:
   install:
     runtime-versions:
       nodejs: 18
       python: 3.10
-
+    commands:
+      - echo "Installing custom Node.js version 18 ..."
+      - n 18 && rm -rf /tmp/*
+      - echo "Installing Python version 3.10 ..."
+      - pyenv global $PYTHON_310_VERSION
   pre_build:
     commands:
       - echo "Installing dependencies"
       - yarn install --check-files
-
   build:
     commands:
       - echo "Reading pipeline execution JSON"
