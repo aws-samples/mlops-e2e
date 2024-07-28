@@ -5,7 +5,7 @@
   "dependencies": {
     "@types/archiver": "^5.1.1",
     "archiver": "^5.3.0",
-    "aws-sdk": "^2.1662.0"
+    "aws-sdk": "^2.1664.0"
   },
   "scripts": {
     "build": "esbuild --bundle src/index.ts --target=node18 --platform=node --outfile=dist/index.js --external:aws-sdk",
