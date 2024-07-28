@@ -5,11 +5,11 @@ set -e
 # Bootstrap the MLOps infrastructure
 pushd ./infrastructure
 echo 'Installing dependencies'
-yarn install --frozen-lockfile
+yarn install 
 
 pushd ./functions/dataSourceMonitor
 echo 'Installing dependencies for functions'
-yarn install --frozen-lockfile
+yarn install 
 popd
 
 echo 'Deploying Insfrastructure in your AWS account'
