@@ -1,21 +1,16 @@
 version: 0.2
 
+env:
+  variables:
+    nodeversion: 16
+    pythonversion: 3.10
+
 phases:
   install:
     runtime-versions:
-      nodejs: 18
-      python: 3.10
-  pre_build:
-    commands:
-      - echo Cleaning cache...
-      - yarn cache clean
-      - echo Installing dependencies...
-      - yarn install --check-files
+      python: $pythonversion
+      nodejs: $nodeversion
+
   build:
     commands:
-      - echo Starting build...
       - bash scripts/deploy.sh
-
-cache:
-  paths:
-    - 'node_modules/**/*'
