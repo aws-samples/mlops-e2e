@@ -4,6 +4,10 @@ set -e
 
 pushd ./model_deploy
 echo 'Installing dependencies'
+
+echo 'Cleaning cache'
+yarn cache clean
+
 yarn install --check-files
 
 echo 'Deploying Model in your AWS account'
