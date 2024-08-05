@@ -2,6 +2,11 @@
   "name": "@aws-prototype/model-deploy-custom-resource-pipeline-model",
   "version": "1.0.0",
   "dependencies": {
-    "aws-sdk": "^2"
+    "aws-sdk": "^2.1662.0"
+  },
+  "scripts": {
+    "build": "esbuild --bundle src/index.ts --target=node18 --platform=node --outfile=dist/index.js --external:aws-sdk",
+    "lint": "eslint --max-warnings 0 .",
+    "lint:fix": "eslint --fix ."
   }
 }

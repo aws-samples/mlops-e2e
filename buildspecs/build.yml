@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    nodeversion: 16
+    nodeversion: 18
     pythonversion: 3.10
 
 phases:
