@@ -114,7 +114,7 @@ def get_pipeline(
         name="ProcessingInstanceType", default_value="ml.t3.medium"
     )
     training_instance_type = ParameterString(
-        name="TrainingInstanceType", default_value="ml.t3.medium"
+        name="TrainingInstanceType", default_value="m4.xlarge"
     )
     model_approval_status = ParameterString(
         name="ModelApprovalStatus", default_value="Approved"
