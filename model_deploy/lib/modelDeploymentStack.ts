@@ -25,7 +25,7 @@ export class ModelDeploymentStack extends Stack {
 
         const endpointInstanceType = new CfnParameter(this, 'endpointInstanceType', {
             type: 'String',
-            default: 't2.micro',
+            default: 'ml.t3.medium',
         });
 
         const endpointInstanceCount = new CfnParameter(this, 'endpointInstanceCount', {
