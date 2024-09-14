@@ -14,3 +14,12 @@ phases:
   build:
     commands:
       - bash scripts/deploy.sh
+
+artifacts:
+  files:
+    - '**/*'
+  exclude:
+    - 'cdk.out/'
+    - 'node_modules/'
+    - '**/*/cdk.out/'
+    - '**/*/node_modules/'
