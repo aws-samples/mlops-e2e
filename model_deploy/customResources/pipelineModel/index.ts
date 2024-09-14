@@ -1,10 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-import * as AWS from 'aws-sdk';
+import { SageMaker } from '@aws-sdk/client-sagemaker';
 
-AWS.config.update({ region: process.env.AWS_REGION });
-
-const sagemaker = new AWS.SageMaker();
+const sagemaker = new SageMaker( { region: process.env.AWS_REGION } );
 
 interface CustomResourceEvent {
     RequestType: string;
@@ -23,8 +21,7 @@ const createModel = async (projectName: string, modelPackageName: string, execut
     const modelPackage = await sagemaker
         .describeModelPackage({
             ModelPackageName: modelPackageName,
-        })
-        .promise();
+        });
 
     await sagemaker
         .createModel({
@@ -35,8 +32,7 @@ const createModel = async (projectName: string, modelPackageName: string, execut
                 Environment: c.Environment,
             })),
             ExecutionRoleArn: executionRoleArn,
-        })
-        .promise();
+        });
 
     return {
         PhysicalResourceId: modelName,
