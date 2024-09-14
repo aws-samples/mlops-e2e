@@ -5,7 +5,10 @@
   "license": "MIT-0",
   "dependencies": {
     "@aws-prototype/model-consumer-online-data-type": "1.0.0",
-    "aws-sdk": "^2"
+    "@aws-sdk/client-s3": "^3.651.0",
+    "@aws-sdk/client-sagemaker-runtime": "^3.0.0",  
+    "@aws-sdk/client-dynamodb": "^3.0.0",         
+    "@aws-sdk/util-dynamodb": "^3.0.0"        
   },
   "scripts": {
     "build": "tsc",
