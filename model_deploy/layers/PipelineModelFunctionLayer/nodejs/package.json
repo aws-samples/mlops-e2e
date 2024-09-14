@@ -1,0 +1,7 @@
+{
+  "name": "@aws-prototype/model-deploy-custom-resource-pipeline-model",
+  "version": "1.0.0",
+  "dependencies": {
+    "@aws-sdk/client-sagemaker": "^3.651.1"
+  }
+}

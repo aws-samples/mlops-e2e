@@ -3,6 +3,7 @@
 *.d.ts
 node_modules
 **/*/node_modules
+*.zip
 
 # CDK asset staging directory
 .cdk.staging

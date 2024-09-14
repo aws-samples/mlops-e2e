@@ -3,8 +3,9 @@
 set -e
 
 pushd ./model_deploy
-echo 'Installing dependencies'
+echo 'Installing dependencies and creating lambda layers'
 yarn install --check-files
+zip -r layers/PipelineModelFunctionLayer.zip layers/PipelineModelFunctionLayer/
 
 echo 'Deploying Model in your AWS account'
 

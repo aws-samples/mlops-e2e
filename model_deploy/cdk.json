@@ -14,9 +14,7 @@
       "yarn.lock",
       "node_modules",
       "test",
-      "**/*/node_modules",
-      "cdk.out/",
-      "**/*/cdk.out/"
+      "cdk.out"
     ]
   },
   "context": {
