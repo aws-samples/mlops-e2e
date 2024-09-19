@@ -2,7 +2,9 @@
   "name": "@aws-prototype/data-source-manifest",
   "version": "1.0.0",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.256.0",
     "@types/archiver": "^5.1.1",
-    "archiver": "^5.3.0"
+    "archiver": "^5.3.0",
+    "uuid": "^10.0.0"
   }
 }

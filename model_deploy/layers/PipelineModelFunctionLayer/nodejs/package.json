@@ -1,5 +1,5 @@
 {
-  "name": "@aws-prototype/model-deploy-custom-resource-pipeline-model",
+  "name": "@aws-prototype/model-deploy-pipeline-model-layer",
   "version": "1.0.0",
   "dependencies": {
     "@aws-sdk/client-sagemaker": "^3.651.1"

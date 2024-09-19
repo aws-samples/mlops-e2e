@@ -1,10 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-import * as AWS from 'aws-sdk';
+import { SageMaker } from '@aws-sdk/client-sagemaker';
 
-AWS.config.update({ region: process.env.AWS_REGION });
-
-const sagemaker = new AWS.SageMaker();
+const sagemaker = new SageMaker({ region: process.env.AWS_REGION });
 
 interface CustomResourceEvent {
     RequestType: string;
@@ -20,23 +18,19 @@ const createModel = async (projectName: string, modelPackageName: string, execut
     const date = new Date();
     const modelName = `${projectName}-${date.getUTCFullYear()}-${date.getUTCMonth()}-${date.getUTCDate()}-${date.getUTCHours()}-${date.getUTCMinutes()}-${date.getUTCSeconds()}-${date.getUTCMilliseconds()}`;
     console.log(`Creating model ${modelName} for modelPackageName: ${modelPackageName} with role ${executionRoleArn}`);
-    const modelPackage = await sagemaker
-        .describeModelPackage({
-            ModelPackageName: modelPackageName,
-        })
-        .promise();
+    const modelPackage = await sagemaker.describeModelPackage({
+        ModelPackageName: modelPackageName,
+    });
 
-    await sagemaker
-        .createModel({
-            ModelName: modelName,
-            Containers: modelPackage.InferenceSpecification?.Containers?.map((c) => ({
-                Image: c.Image,
-                ModelDataUrl: c.ModelDataUrl,
-                Environment: c.Environment,
-            })),
-            ExecutionRoleArn: executionRoleArn,
-        })
-        .promise();
+    await sagemaker.createModel({
+        ModelName: modelName,
+        Containers: modelPackage.InferenceSpecification?.Containers?.map((c) => ({
+            Image: c.Image,
+            ModelDataUrl: c.ModelDataUrl,
+            Environment: c.Environment,
+        })),
+        ExecutionRoleArn: executionRoleArn,
+    });
 
     return {
         PhysicalResourceId: modelName,

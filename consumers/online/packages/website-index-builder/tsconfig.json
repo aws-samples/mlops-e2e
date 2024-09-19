@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "ES2018",
+    "target": "ESNext",
     "module": "commonjs",
     "lib": [
-      "es2018"
+      "esnext", "dom"
     ],
     "declaration": true,
     "strict": true,

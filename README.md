@@ -4,8 +4,8 @@ This sample project uses a sample machine learning project to showcase how we ca
 
 ## Pre-requisite
 
-* [Python](https://www.python.org/) (version 3.8 or higher)
-* [NodeJS](https://nodejs.org/en/) (version 14 or higher)
+* [Python](https://www.python.org/) (version 3.10 or higher)
+* [NodeJS](https://nodejs.org/en/) (version 18 or higher)
 * [Yarn](https://yarnpkg.com/) (installed via `npm install -g yarn`)
 * [Typescript](https://www.typescriptlang.org/) (installed via `npm install -g typescript`) 
 * [AWS CDK v2](https://aws.amazon.com/cdk/) CLI (installed via `npm install -g aws-cdk`)

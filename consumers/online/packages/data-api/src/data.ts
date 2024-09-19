@@ -1,16 +1,18 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-import * as AWS from 'aws-sdk';
+
+import { SageMakerRuntimeClient, InvokeEndpointCommand } from '@aws-sdk/client-sagemaker-runtime';
+import { DynamoDBClient, PutItemCommand, UpdateItemCommand } from '@aws-sdk/client-dynamodb';
+import { marshall, unmarshall } from '@aws-sdk/util-dynamodb'; // Used for converting data to DynamoDB format
 import { DataType, AddLabelRequest } from '@aws-prototype/model-consumer-online-data-type';
 
 const sageMakerEndpointName = process.env.SAGEMAKER_ENDPOINT_NAME || '';
 const dataTableName = process.env.DATA_TABLE_NAME || '';
+const region = process.env.AWS_REGION || '';
 
-const region = process.env.AWS_REGION;
-AWS.config.update({ region });
-
-const sagemaker = new AWS.SageMakerRuntime();
-const documentClient = new AWS.DynamoDB.DocumentClient();
+// Initialize AWS SDK v3 clients
+const sagemaker = new SageMakerRuntimeClient({ region });
+const dynamoDBClient = new DynamoDBClient({ region });
 
 const getInput = (data: DataType): string => {
     return `${data.sex},${data.length},${data.diameter},${data.height},${data.wholeWeight},${data.shuckedWeight},${data.visceraWeight},${data.shellWeight}`;
@@ -19,48 +21,53 @@ const getInput = (data: DataType): string => {
 const getInference = async (id: string, data: DataType) => {
     const inputString = getInput(data);
     console.log('Input data: ', inputString);
-    const result = await sagemaker
-        .invokeEndpoint({
-            Body: inputString,
-            EndpointName: sageMakerEndpointName,
-            ContentType: 'text/csv',
-            Accept: 'application/json',
-        })
-        .promise();
 
-    const predict = result.Body.toString();
+    // Invoke SageMaker endpoint using v3
+    const invokeCommand = new InvokeEndpointCommand({
+        Body: new TextEncoder().encode(inputString),
+        EndpointName: sageMakerEndpointName,
+        ContentType: 'text/csv',
+        Accept: 'application/json',
+    });
+
+    const result = await sagemaker.send(invokeCommand);
+    const predict = (result.Body && new TextDecoder().decode(result.Body)) || '';
     console.log('Prediction: ', predict);
-    //Write to DynamoDB with predict value
+
+    // Write to DynamoDB with the predicted value
     const record = {
         ...data,
         id,
         predict,
     };
-    const dynamoDBPutRequest = {
+
+    const dynamoDBPutCommand = new PutItemCommand({
         TableName: dataTableName,
-        Item: {
-            ...record,
-        },
-    };
-    await documentClient.put(dynamoDBPutRequest).promise();
+        Item: marshall(record),
+    });
+
+    await dynamoDBClient.send(dynamoDBPutCommand);
+
     return record;
 };
 
 const addLabel = async (id: string, { actual }: AddLabelRequest) => {
     const updateExpression = 'SET actual = :a';
-    const params = {
+
+    const updateCommand = new UpdateItemCommand({
         TableName: dataTableName,
-        Key: {
+        Key: marshall({
             id,
-        },
+        }),
         UpdateExpression: updateExpression,
-        ExpressionAttributeValues: {
+        ExpressionAttributeValues: marshall({
             ':a': actual,
-        },
+        }),
         ReturnValues: 'ALL_NEW',
-    };
-    const response = await documentClient.update(params).promise();
-    return response.$response.data;
+    });
+
+    const response = await dynamoDBClient.send(updateCommand);
+    return response.Attributes ? unmarshall(response.Attributes) : {};
 };
 
 export { getInference, addLabel };
