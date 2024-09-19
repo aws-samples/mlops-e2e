@@ -24,14 +24,14 @@ const getInference = async (id: string, data: DataType) => {
 
     // Invoke SageMaker endpoint using v3
     const invokeCommand = new InvokeEndpointCommand({
-        Body: Buffer.from(inputString),
+        Body: new TextEncoder().encode(inputString),
         EndpointName: sageMakerEndpointName,
         ContentType: 'text/csv',
         Accept: 'application/json',
     });
 
     const result = await sagemaker.send(invokeCommand);
-    const predict = result.Body?.toString() || '';
+    const predict = (result.Body && new TextDecoder().decode(result.Body)) || '';
     console.log('Prediction: ', predict);
 
     // Write to DynamoDB with the predicted value
