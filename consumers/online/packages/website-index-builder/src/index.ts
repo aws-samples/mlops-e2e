@@ -1,12 +1,12 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-import * as AWS from 'aws-sdk';
+
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 import archiver = require('archiver');
 
-AWS.config.update({ region: process.env.AWS_REGION });
-
-const s3 = new AWS.S3();
+// Initialize the S3 client with region
+const s3 = new S3Client({ region: process.env.AWS_REGION });
 
 interface CustomResourceEvent {
     RequestType: string;
@@ -37,7 +37,7 @@ const createZipFileContent = async (objectKey: string, indexFileContent: string)
 
     archiveHandler.append(indexFileContent, { name: 'index.html' });
 
-    archiveHandler.finalize();
+    await archiveHandler.finalize();
     await closed;
 
     return fs.readFileSync(filePath);
@@ -50,18 +50,19 @@ const createOrUpdateConfig = async (config: Record<string, string>, template: st
 
     if (indexFileContent.search(configContent) < 0) {
         console.log('Index file content:', indexFileContent);
-        throw 'Failed in generating Index file';
+        throw new Error('Failed in generating Index file');
     }
 
     const zipFileContent = await createZipFileContent(objectKey, indexFileContent);
 
-    await s3
-        .putObject({
-            Bucket: s3BucketName,
-            Key: objectKey,
-            Body: zipFileContent,
-        })
-        .promise();
+    // Upload the zip file to S3 using the v3 SDK
+    const putObjectCommand = new PutObjectCommand({
+        Bucket: s3BucketName,
+        Key: objectKey,
+        Body: zipFileContent,
+    });
+
+    await s3.send(putObjectCommand);
 
     return {
         PhysicalResourceId: objectKey,
@@ -70,12 +71,13 @@ const createOrUpdateConfig = async (config: Record<string, string>, template: st
 
 const deleteConfig = async (configKeyToDelete: string, s3BucketName: string) => {
     try {
-        await s3
-            .deleteObject({
-                Bucket: s3BucketName,
-                Key: configKeyToDelete,
-            })
-            .promise();
+        // Delete the object from S3 using the v3 SDK
+        const deleteObjectCommand = new DeleteObjectCommand({
+            Bucket: s3BucketName,
+            Key: configKeyToDelete,
+        });
+
+        await s3.send(deleteObjectCommand);
     } catch (e) {
         console.log('Error in deleting the old config object', e);
     }
@@ -84,8 +86,8 @@ const deleteConfig = async (configKeyToDelete: string, s3BucketName: string) => 
 };
 
 const dispatch = async (event: CustomResourceEvent, requestType: string) => {
-    const props = event['ResourceProperties'];
-    const resourceId = event['PhysicalResourceId'];
+    const props = event.ResourceProperties;
+    const resourceId = event.PhysicalResourceId;
     switch (requestType) {
         case 'Create':
         case 'Update': {
@@ -97,14 +99,14 @@ const dispatch = async (event: CustomResourceEvent, requestType: string) => {
             return deleteConfig(resourceId, s3BucketName);
         }
         default:
-            throw 'Unsupported RequestType';
+            throw new Error('Unsupported RequestType');
     }
 };
 
-exports.handler = async (event: CustomResourceEvent) => {
+export const handler = async (event: CustomResourceEvent) => {
     console.log('Event: \n' + JSON.stringify(event, null, 2));
     try {
-        const requestType = event['RequestType'];
+        const requestType = event.RequestType;
         const data = await dispatch(event, requestType);
         console.log('Response', data);
         return data;

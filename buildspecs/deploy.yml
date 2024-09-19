@@ -2,7 +2,7 @@ version: 0.2
 
 env:
   variables:
-    nodeversion: 16
+    nodeversion: 18
     pythonversion: 3.10
 
 phases:
@@ -14,3 +14,12 @@ phases:
   build:
     commands:
       - bash scripts/deploy.sh
+
+artifacts:
+  files:
+    - '**/*'
+  exclude:
+    - 'cdk.out/'
+    - 'node_modules/'
+    - '**/*/cdk.out/'
+    - '**/*/node_modules/'

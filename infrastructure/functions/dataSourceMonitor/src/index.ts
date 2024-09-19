@@ -1,12 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: MIT-0
-import * as AWS from 'aws-sdk';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import * as fs from 'fs';
 import archiver = require('archiver');
 
-AWS.config.update({ region: process.env.AWS_REGION });
-
-const s3 = new AWS.S3();
+const s3Client = new S3Client({ region: process.env.AWS_REGION });
 
 const s3BucketName = process.env.DATA_MANIFEST_BUCKET_NAME || '';
 
@@ -75,13 +73,12 @@ const createZipFileContent = async (objectKey: string, fileContent: string) => {
 };
 
 const uploadToS3 = async (zipFileContent: Buffer) => {
-    return s3
-        .putObject({
-            Bucket: s3BucketName,
-            Key: 'manifest.json.zip',
-            Body: zipFileContent,
-        })
-        .promise();
+    const command = new PutObjectCommand({
+        Bucket: s3BucketName,
+        Key: 'manifest.json.zip',
+        Body: zipFileContent,
+    });
+    await s3Client.send(command);
 };
 
 exports.handler = async (event: LambdaEvent, content: LambdaContext) => {

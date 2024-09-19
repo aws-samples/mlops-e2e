@@ -1,6 +1,6 @@
 {
     "projectName": "mlops-e2e",
-    "repoType": "codecommit",
+    "repoType": "git",
     "git": {
         "githubConnectionArn": "",
         "githubRepoOwner": "",

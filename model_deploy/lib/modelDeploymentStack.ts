@@ -25,7 +25,7 @@ export class ModelDeploymentStack extends Stack {
 
         const endpointInstanceType = new CfnParameter(this, 'endpointInstanceType', {
             type: 'String',
-            default: 'ml.m5.xlarge',
+            default: 'ml.t2.medium',
         });
 
         const endpointInstanceCount = new CfnParameter(this, 'endpointInstanceCount', {
@@ -63,12 +63,21 @@ export class ModelDeploymentStack extends Stack {
             })
         );
 
+        // Define the Lambda Layer
+        const PipelineModelFunctionLayer = new lambda.LayerVersion(this, 'PipelineModelFunctionLayer', {
+            code: lambda.Code.fromAsset(path.join(__dirname, '../layers/PipelineModelFunctionLayer.zip')),
+            compatibleRuntimes: [lambda.Runtime.NODEJS_18_X],
+            description: 'A Lambda layer for common dependencies',
+        });
+
+        // Define the Lambda Function with the Layer
         const pipelineModelFunction = new lambdaNodeJs.NodejsFunction(this, 'PipelineModelFunction', {
-            runtime: lambda.Runtime.NODEJS_14_X,
+            runtime: lambda.Runtime.NODEJS_18_X,
             handler: 'handler',
             entry: path.join(__dirname, '../customResources/pipelineModel/index.ts'),
             timeout: Duration.minutes(1),
             role: pipelineModelFunctionRole,
+            layers: [PipelineModelFunctionLayer], // Add the layer here
         });
 
         const pipelineModelCustomResourceProvider = new customResource.Provider(
