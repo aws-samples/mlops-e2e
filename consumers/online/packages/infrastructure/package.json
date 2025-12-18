@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "aws-cdk": "2.157.0",
-    "esbuild": "0.17.18"
+    "esbuild": "0.25.0"
   },
   "dependencies": {
     "aws-cdk-lib": "2.157.0",
